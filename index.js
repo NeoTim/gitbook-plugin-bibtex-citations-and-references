@@ -19,7 +19,7 @@ module.exports = {
 		for (var myprop in block) {
 		    ret = ret + "<br>" + myprop + block[myprop];
 		}
-		retun ret;
+		return ret;
 	    }
 	}
     },
