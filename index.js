@@ -15,7 +15,11 @@ module.exports = {
     blocks: {
 	references: {
 	    process: function(block) {
-		return "REFERENCES WILL GO HERE!<br><br>" + block;
+		var ret = 'REFERENCES WILL GO HERE!<br><br><hr>';
+		for (var myprop in block) {
+		    ret = ret + "<br>" + myprop + block[myprop];
+		}
+		retun ret;
 	    }
 	}
     },
