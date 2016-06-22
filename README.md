@@ -1,4 +1,4 @@
-# Gitbook bibtex citations and references
+# Gitbook plugin: bibtex citations and references
 
 ## WARNING
 
