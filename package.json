@@ -1,9 +1,9 @@
 {
-  "name": "gitbook-bibtex-citations-and-references",
+  "name": "gitbook-plugin-bibtex-citations-and-references",
   "version": "0.0.1",
   "description": "Plugin for Gitbook that handles citations and references. Expects bibtex references. Customisable behaviour.",
   "engines": {
-    "gitbook": ">2.0.0"
+    "gitbook": ">=2.0.0"
   },
   "main": "index.js",
   "scripts": {
@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/austinjp/gitbook-bibtex-citations-and-references.git"
+    "url": "git+https://github.com/austinjp/gitbook-plugin-bibtex-citations-and-references.git"
   },
   "keywords": [
     "gitbook",
@@ -19,10 +19,10 @@
     "citations",
     "references"
   ],
-  "author": "Austin Plunkett",
+  "author": "austinjp",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/austinjp/gitbook-bibtex-citations-and-references/issues"
+    "url": "https://github.com/austinjp/gitbook-plugin-bibtex-citations-and-references/issues"
   },
-  "homepage": "https://github.com/austinjp/gitbook-bibtex-citations-and-references#readme"
+  "homepage": "https://github.com/austinjp/gitbook-plugin-bibtex-citations-and-references#readme"
 }
