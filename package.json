@@ -34,5 +34,15 @@
   "bugs": {
     "url": "https://github.com/austinjp/gitbook-plugin-bibtex-citations-and-references/issues"
   },
-  "homepage": "https://github.com/austinjp/gitbook-plugin-bibtex-citations-and-references#readme"
+  "homepage": "https://github.com/austinjp/gitbook-plugin-bibtex-citations-and-references#readme",
+  "dependencies": {
+    "bibtex-parser-js": "0.0.2",
+    "fs": "0.0.2",
+    "lodash": "^4.13.1"
+  },
+  "devDependencies": {
+    "bibtex-parser-js": "0.0.2",
+    "fs": "0.0.2",
+    "lodash": "^4.13.1"
+  }
 }
