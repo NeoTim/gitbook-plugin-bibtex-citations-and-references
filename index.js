@@ -1,6 +1,8 @@
 var fs = require('fs');
-var bibtexParse = require('bibtex-parser');
+var path = require('path');
+var glob = require('glob');
 
+var bibtexParse = require('bibtex-parser');
 var citeproc = require("citeproc-js-node");
 var sys = new citeproc.simpleSys();
 
@@ -9,11 +11,27 @@ var langString;
 var lang;
 var engine;
 
+var localesFile;
+var stylesFile;
 
 var DEBUG = false;
 
 var bibtext;
 
+
+function getLocalesFile() {
+    // FIXME This should be configurable in settings.
+    // Only expecting to find one file, so return the first one found:
+    var p = './assets/csl/locales/';
+    return glob.sync(path.join(p,'locales-*.xml'))[0].toString();
+}
+
+function getStylesFile() {
+    // FIXME This should be configurable in settings.
+    // Only expecting to find one file, so return the first one found:
+    var p = './assets/csl/styles/';
+    return glob.sync(path.join(p,'*'))[0].toString();
+}
 
 function deTexString(str, context, style) {
     // Attempt some brutal translation of the TeX string in a bibtex
@@ -116,16 +134,19 @@ module.exports = {
             // this.bib = bp;
             this.bibCount = 0;
 
+	    localesFile = getLocalesFile();
+	    stylesFile = getStylesFile();
+
 	    // FIXME Implement CSL stuff!
 	    // See https://github.com/citation-style-language/ and https://github.com/citation-style-language/locales
-	    // There are hundreds of possible languages and styles.
-	    // FIXME Should be selectable in options.
-	    // FIXME Should I clone them all into this plugin, or download dynamically??
-	    langString = 'en-GB';
-	    lang = fs.readFileSync('assets/csl/locales/locales-' + langString + '.xml', 'utf8');
+
+	    langString = 'en-GB'; // FIXME ascertain from file..?
+	    lang = fs.readFileSync(localesFile, 'utf8');
+	    console.log("Set lang  = "  + lang);
 	    sys.addLocale(langString, lang);
 
-	    styleString = fs.readFileSync('assets/csl/styles/harvard-imperial-college-london.csl', 'utf8');
+	    styleString = fs.readFileSync(stylesFile, 'utf8');
+	    console.log("Set style = "  + lang);
 	    engine = sys.newEngine(styleString, langString, null);
         }
     },
