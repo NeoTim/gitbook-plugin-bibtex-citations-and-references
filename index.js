@@ -122,10 +122,10 @@ module.exports = {
 	    // FIXME Should be selectable in options.
 	    // FIXME Should I clone them all into this plugin, or download dynamically??
 	    langString = 'en-GB';
-	    lang = fs.readFileSync('./csl/locales/locales-' + langString + '.xml', 'utf8');
+	    lang = fs.readFileSync('assets/csl/locales/locales-' + langString + '.xml', 'utf8');
 	    sys.addLocale(langString, lang);
 
-	    styleString = fs.readFileSync('./csl/styles/harvard-imperial-college-london.csl', 'utf8');
+	    styleString = fs.readFileSync('assets/csl/styles/harvard-imperial-college-london.csl', 'utf8');
 	    engine = sys.newEngine(styleString, langString, null);
         }
     },
