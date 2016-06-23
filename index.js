@@ -1,5 +1,14 @@
-var bibtexParse = require('bibtex-parser');
 var fs = require('fs');
+var bibtexParse = require('bibtex-parser');
+
+var citeproc = require("citeproc-js-node");
+var sys = new citeproc.simpleSys();
+
+var styleString;
+var langString;
+var lang;
+var engine;
+
 
 var DEBUG = false;
 
@@ -106,6 +115,18 @@ module.exports = {
             }
             // this.bib = bp;
             this.bibCount = 0;
+
+	    // FIXME Implement CSL stuff!
+	    // See https://github.com/citation-style-language/ and https://github.com/citation-style-language/locales
+	    // There are hundreds of possible languages and styles.
+	    // FIXME Should be selectable in options.
+	    // FIXME Should I clone them all into this plugin, or download dynamically??
+	    langString = 'en-GB';
+	    lang = fs.readFileSync('./csl/locales/locales-' + langString + '.xml', 'utf8');
+	    sys.addLocale(langString, lang);
+
+	    styleString = fs.readFileSync('./csl/styles/harvard-imperial-college-london.csl', 'utf8');
+	    engine = sys.newEngine(styleString, langString, null);
         }
     },
 
