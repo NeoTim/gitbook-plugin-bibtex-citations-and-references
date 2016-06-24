@@ -1,6 +1,6 @@
 {
   "name": "gitbook-plugin-bibtex-citations-and-references",
-  "version": "0.1.30",
+  "version": "0.2.8",
   "description": "ALPHA TEST. DO NOT USE. Plugin for Gitbook that handles citations and references. Expects bibtex references. Capable of various citation and reference styles.",
   "engines": {
     "gitbook": ">=2.0.0"
@@ -36,12 +36,14 @@
   },
   "homepage": "https://github.com/austinjp/gitbook-plugin-bibtex-citations-and-references#readme",
   "dependencies": {
+    "bib2json": "0.0.1",
     "bibtex-parser": "=0.0.0",
     "citeproc-js-node": "=0.0.2",
     "fs": "=0.0.2",
     "glob": "=7.0.5"
   },
   "devDependencies": {
+    "bib2json": "0.0.1",
     "bibtex-parser": "=0.0.0",
     "citeproc-js-node": "=0.0.2",
     "fs": "=0.0.2",

@@ -6,18 +6,51 @@ var bibtexParse = require('bibtex-parser');
 var citeproc = require("citeproc-js-node");
 var sys = new citeproc.simpleSys();
 
+// FIXME Might be easier to use this:
+var bib2json = require('bib2json');
+
+
+// "Globals" here:
+
 var styleString;
 var langString;
 var lang;
 var engine;
 
-var localesFile;
-var stylesFile;
-
-var DEBUG = false;
+var maxAuthsBeforeEtAl;
 
 var bibtext;
 
+var DEBUG = false;
+
+
+function citeInlineAuthors(auth) {
+    // Convert string of authors into a format suitable for inline citations.
+    // Returns a string of authors separated by commas.
+
+    // If the authors are surrounded by {} it means "do not alter".
+    var regexDNA = /^[{].*[}]$/;
+    if (auth.match(regexDNA)) {
+	return auth;
+    }
+    
+    var ret = [];
+    var regexAnd = /\s+and\s+/;
+    var authors = auth.split(regexAnd);
+    var regexCommas = /[,]\s*?/;
+
+    for (var i = 0; i < authors.length; i++) {
+	// If one person's name contains commas, assumes it's in the order Surname, Forenames.
+	var namesOfOneIndividual = authors[i];
+	namesOfOneIndividual = namesOfOneIndividual.split(regexCommas);
+	if (namesOfOneIndividual.length > 1) {
+	    namesOfOneIndividual.reverse;
+	    authors[i] = namesOfOneIndividual.join(" ");
+	}
+	ret.push(authors[i]);
+    }
+    return ret.join(", ");
+}
 
 function getLocalesFile() {
     // FIXME This should be configurable in settings.
@@ -121,7 +154,21 @@ module.exports = {
     hooks: {
         init: function() {
 
+	    // Number of authors that should be listed in a comma-separated list.
+	    // If greater than this, it will be shortened to "et al".
+	    maxAuthsBeforeEtAl = 3;
+
 	    bibtex = bibtexParse(fs.readFileSync('literature.bib', 'utf8'));
+	    var entries = bib2json(fs.readFileSync('literature.bib', 'utf8'));
+	    console.log("######################################");
+	    // console.log(entries);
+	    for (var prop in entries) {
+                if (Object.prototype.hasOwnProperty.call(entries, prop)) {
+		    console.log(entries.prop + ": " + prop);
+		}
+	    }
+	    console.log("######################################");
+
 
             if (DEBUG) {
 		var bibDetail = getBibDetail(findBibEntryByKey(bibtex, "Wallace2013"), "title");
@@ -134,20 +181,17 @@ module.exports = {
             // this.bib = bp;
             this.bibCount = 0;
 
-	    localesFile = getLocalesFile();
-	    stylesFile = getStylesFile();
-
 	    // FIXME Implement CSL stuff!
 	    // See https://github.com/citation-style-language/ and https://github.com/citation-style-language/locales
 
+	    /*
 	    langString = 'en-GB'; // FIXME ascertain from file..?
-	    lang = fs.readFileSync(localesFile, 'utf8');
-	    console.log("Set lang  = "  + lang);
+	    lang = fs.readFileSync(getLocalesFile(), 'utf8');
 	    sys.addLocale(langString, lang);
 
-	    styleString = fs.readFileSync(stylesFile, 'utf8');
-	    console.log("Set style = "  + lang);
+	    styleString = fs.readFileSync(getStylesFile(), 'utf8');
 	    engine = sys.newEngine(styleString, langString, null);
+	    */
         }
     },
 
@@ -176,9 +220,10 @@ module.exports = {
                 }
 
 		if (citation.AUTHOR) {
-                    ret = deTexString(citation.AUTHOR, "author", "default");
+                    // ret = citeInlineAuthors(deTexString(citation.AUTHOR, "author", "default"));
+		    ret = citeInlineAuthors("Surname1, Forename1 and Forename2 Surname2 and Surname3, Forename3");
                 } else {
-                    ret = "[Author not found for key: " + key + "]";
+                    ret = "[Author not found in bibtex: " + key + "]";
                 }
 
 		if (citation.YEAR) {
@@ -188,7 +233,7 @@ module.exports = {
                 return ret;
 
             } else {
-		return "[Citation not found for key: " + key + "]";
+		return "[Citation not found in bibtex: " + key + "]";
             }
         },
 
