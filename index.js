@@ -3,14 +3,17 @@ var path = require('path');
 // var glob = require('glob');
 var util = require('util');
 var bibtexParse = require('bibtex-parser');
-var bibtexParseJSON = require('bibtex-parser-js');
-var bib2json = require('bib2json');
+// var bibtexParseJSON = require('bibtex-parser-js');
+// var bib2json = require('bib2json');
 // var citeproc = require('citeproc-js-node');
 
-myInit();
-console.log(cite("InstMed2001"));
-console.log(cite("Wallace2013"));
-console.log(cite("Glasziou2011"));
+/*
+  myInit();
+  console.log(cite("InstMed2001"));
+  console.log(cite("Wallace2013"));
+  console.log(cite("Glasziou2011"));
+*/
+
 
 function myInit() {
     // FIXME If only this worked :(
