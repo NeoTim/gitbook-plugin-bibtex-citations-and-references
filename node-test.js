@@ -9,5 +9,5 @@ console.log(cite.filters.cite('Glasziou2011'));
 console.log(cite.filters.cite('Wallace2013'));
 
 console.log("\nGenerated the following bibliography:\n")
-console.log(cite.blocks.refs());
+console.log(cite.blocks.references());
 
