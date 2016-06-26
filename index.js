@@ -6,12 +6,13 @@ var util = require('util');
 var bibtexParse = require('bibtex-parser');
 // var bib2json = require('bib2json');
 
-var refs = [];
+var refs;
 
 function myInit() {
     // bibtex = bib2json(fs.readFileSync('literature.bib','utf8'));
     bibtex = bibtexParse(fs.readFileSync('literature.bib','utf8'));
     this.bibCount = 0;
+    refs = [];
 }
 
 
@@ -25,9 +26,9 @@ function addToToc(file, num) {
 
 
 function addToRefs(citation) {
-    // var myRefs = Object.assign(this.refs, citation);
-    // this.refs.push(myRefs);
-    refs.push(citation);
+    if (citation.AUTHOR || citation.TITLE || citation.URL) {
+	refs.push(citation);
+    }
 }
 
 
@@ -49,11 +50,12 @@ function displayDNA(str) {
 }
 
 
-function cite(key) {
-    if (key != undefined) {
+function myCite(key) {
+    if (key !== undefined) {
 	var citation = findBibEntryByKey(bibtex, key);
-	if (citation !== undefined) {
 
+	if (citation !== undefined) {
+	    
 	    if (!citation.used) {
 		citation.used = true;
 		this.bibCount++;
@@ -67,6 +69,7 @@ function cite(key) {
 		return displayDNA(auth) + " (" + citation.YEAR + ")";
 	    }
 
+	    /*
 	    var tocFile = undefined;
             try {
 		tocFile = this.options.pluginsConfig.bibtex.tocfile;
@@ -74,8 +77,9 @@ function cite(key) {
 		// ...?
 	    }
 	    addToToc(tocFile, citation.number);
-
-	    addToRefs(citation);
+	    */
+	    
+	    addToRefs(citation); // FIXME THe refs are huge and full of errors :(
 
 	    var r = citeAuthorsInline(auth) + " (" + citation.YEAR + ")";
 	    return r;
@@ -88,6 +92,9 @@ function cite(key) {
 }
 
 function citeAuthorsInline(auths) {
+    // FIXME This is causing stack overflow?? :(
+    return auths;
+
     var regexAnd = /\s+and\s+/;
     var authors = [];
     authors = auths.split(regexAnd);
@@ -95,13 +102,16 @@ function citeAuthorsInline(auths) {
     for (var i in authors) {
 	var a = authors[i];
 	var b = nameInline(a);
-	names.push(nameInline(b));
+	names.push(b);
     }
     return names.join(", ");
 }
 
 
 function refsAuthorsFromString(auths) {
+
+    return auths; // FIXME
+
     var regexAnd = /\s+and\s+/;
     var authors = [];
     authors = auths.split(regexAnd);
@@ -117,13 +127,15 @@ function refsAuthorsFromString(auths) {
 
 function nameInlineRefs(name) {
     // Convert "Adam Smith" or "A Smith" to "Smith, A"
-    var regexSpace = /\s+/;
-    var regexComma = /,/;
-    if (! name.match(regexComma)) {
-	var r = name.split(regexSpace);
-	r[0] = r[0].substring(0,1);
-	r.reverse();
-	name = r.join(' ');
+    if (typeof name === 'string') {
+	var regexSpace = /\s+/;
+	var regexComma = /,/;
+	if (! name.match(regexComma)) {
+	    var r = name.split(regexSpace);
+	    r[0] = r[0].substring(0,1);
+	    r.reverse();
+	    name = r.join(' ');
+	}
     }
     return name;
 }
@@ -131,17 +143,22 @@ function nameInlineRefs(name) {
 
 function nameInline(name) {
     // Convert "Smith, A" to "A Smith"
-    var regexComma = /,/;
-    var n = '';
-    if (name.match(regexComma)) {
-	var r = name.split(regexComma);
-	r.reverse();
-	n = r.join(' ');
-	name = n;
+
+    return name; // FIXME
+
+    if (typeof name === 'string') {
+	var regexComma = /,/;
+	var n = '';
+	if (name.match(regexComma)) {
+	    var r = name.split(regexComma);
+	    r.reverse();
+	    n = r.join(' ');
+	    // Convert "A Smith" (or "Adam Smith") to "Smith"
+	    var all = n.split(/\s+/);
+	    return all[all.length-1];
+	}
     }
-    // Convert "A Smith" (or "Adam Smith") to "Smith"
-    var all = name.split(/\s+/);
-    return all[all.length-1];
+    return name;
 }
 
 
@@ -170,8 +187,8 @@ module.exports = {
 
     filters: {
 	cite: function(key) {
-	    if (key != undefined) {
-		return cite(key);
+	    if (key !== undefined) {
+		return myCite(key);
 	    } else {
 		return undefined;
 	    }
@@ -179,52 +196,60 @@ module.exports = {
     },
 
     blocks: {
-	refs: function() {
-	    var ret = '';
+	references: function() {
+
+	    var ret = '<ul>';
+
 	    for (var r in refs) {
 
-		if (refs[r].AUTHOR) {
-		    ret = ret + refsAuthorsFromString(refs[r].AUTHOR) + ', ';
-		} else {
-		    ret = ret + 'Unknown, ';
-		}
+		if (refs[r].AUTHOR || refs[r].TITLE) {
 
-		if (refs[r].YEAR) {
-		    ret = ret + '(' + refs[r].YEAR + '). ';
-		} else {
-		    ret = ret + '(n.d.). ';
-		}
+		    ret = ret + '<li>';
 
-		if (refs[r].TITLE) {
-		    ret = ret + '<b>' + displayDNA(refs[r].TITLE )+ '.</b> ';
-		} else {
-		    ret = ret + '<b>(Untitled.)</b> ';
-		}
-
-		if (refs[r].JOURNAL) {
-		    ret = ret + '<i>' + displayDNA(refs[r].JOURNAL) + '</i>. ';
-		}
-
-		if (refs[r].VOLUME) {
-		    ret = ret + '<b>' + refs[r].VOLUME + '</b> ';
-		}
-
-		if (refs[r].ISSUE) {
-		    if (refs[r].VOLUME) {
-			ret = ret + '(' + refs[r].ISSUE + ') ';
+		    if (refs[r].AUTHOR) {
+			ret = ret + refsAuthorsFromString(refs[r].AUTHOR) + ', ';
+		    } else {
+			ret = ret + 'Unknown, ';
 		    }
+		    
+		    if (refs[r].YEAR) {
+			ret = ret + '(' + refs[r].YEAR + '). ';
+		    } else {
+			ret = ret + '(n.d.). ';
+		    }
+		    
+		    if (refs[r].TITLE) {
+			ret = ret + '<b>' + displayDNA(refs[r].TITLE )+ '.</b> ';
+		    } else {
+			ret = ret + '<b>(Untitled.)</b> ';
+		    }
+		    
+		    if (refs[r].JOURNAL) {
+			ret = ret + '<i>' + displayDNA(refs[r].JOURNAL) + '</i>. ';
+		    }
+		    
+		    if (refs[r].VOLUME) {
+			ret = ret + '<b>' + refs[r].VOLUME + '</b> ';
+		    }
+		    
+		    if (refs[r].ISSUE) {
+			if (refs[r].VOLUME) {
+			    ret = ret + '(' + refs[r].ISSUE + ') ';
+			}
+		    }
+		    
+		    if (refs[r].PAGES) {
+			if (refs[r].PAGES.match(/\-/)) { ret = ret + 'p'; }
+			ret = ret + 'p. ' + refs[r].PAGES + '. ';
+		    }
+		    
+		    if (refs[r].URL) {
+			ret = ret + 'Available online at <a href="' + refs[r].URL + '">' + refs[r].URL + '</a>';
+		    }
+		    
+		    ret = ret + "\n";
 		}
-
-		if (refs[r].PAGES) {
-		    if (refs[r].PAGES.match(/\-/)) { ret = ret + 'p'; }
-		    ret = ret + 'p. ' + refs[r].PAGES + '. ';
-		}
-
-		if (refs[r].URL) {
-		    ret = ret + 'Available online at <a href="' + refs[r].URL + '">' + refs[r].URL + '</a>';
-		}
-
-		ret = ret + "\n";
+		ret = ret + '</li>' + "\n";
 	    }
 	    return ret;
 	}
