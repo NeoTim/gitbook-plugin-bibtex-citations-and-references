@@ -4,17 +4,22 @@ var fs = require('fs');
 var path = require('path');
 var util = require('util');
 var bibtexParse = require('bibtex-parser');
+var colors = require('colors');
 // var bib2json = require('bib2json');
 
 var refs;
-var consoleMessage;
+
+var bibtex;
+
+// Keep track for info logged to console
+var totalInlineCites = 0;
+var totalRefs = 0;
 
 function myInit() {
     // bibtex = bib2json(fs.readFileSync('literature.bib','utf8'));
     bibtex = bibtexParse(fs.readFileSync('literature.bib','utf8'));
     this.bibCount = 0;
     refs = [];
-    consoleMessage = '';
 }
 
 
@@ -30,6 +35,7 @@ function addToToc(file, num) {
 function addToRefs(citation) {
     if (citation.AUTHOR || citation.TITLE || citation.URL) {
 	refs.push(citation);
+	totalRefs++;
     }
 }
 
@@ -52,63 +58,81 @@ function displayDNA(str) {
 }
 
 
-function myCite(key) {
+function myCite(key, year) {
+
+    var retCite;
+
     if (key !== undefined) {
-	var citation = findBibEntryByKey(bibtex, key);
+	var citation = findBibEntryByKey(key);
+
+	// console.log('.. '.magenta + "found citation with key: " + key);
+	// console.log('.... '.magenta + "with citation: " + citation.toString);
 
 	if (citation !== undefined) {
-	    
+
 	    if (!citation.used) {
 		citation.used = true;
 		this.bibCount++;
 		citation.number = this.bibCount;
 	    
-		var auth = citation.AUTHOR;
-		
+		addToRefs(citation);
+
 		// Do not alter any string surrounded by { and }.
-		if (checkDNA(auth)) {
-		    return displayDNA(auth) + " (" + citation.YEAR + ")";
+		if (checkDNA(citation.AUTHOR)) {
+		    retCite = displayDNA(citation.AUTHOR) + (year ? " (" + citation.YEAR + ")" : "");
+		} else {
+		    retCite = citeAuthorsInline(citation.AUTHOR) + (year ? " (" + citation.YEAR + ")" : "");
 		}
 		
-		/*
-		  var tocFile = undefined;
-		  try {
-		      tocFile = this.options.pluginsConfig.bibtex.tocfile;
-		  } catch (e) {
-		      // ...?
-		  }
-		  addToToc(tocFile, citation.number);
-		*/
-	    
-		addToRefs(citation);
-		
-		var r = citeAuthorsInline(auth) + " (" + citation.YEAR + ")";
-		return r;
 	    } else {
-		return undefined;
+		console.log("!!!!!! citation not USED".red);
+		retCite = undefined;
 	    }
 	} else {
-	    return '[CITATION NOT FOUND: "' + key + '"]';
+	    console.log("!!!!!! citation not FOUND".red);
+	    retCite = '[CITATION NOT FOUND: "' + key + '"]';
 	}
     } else {
-	return '[CITATION NOT SPECIFIED]';
+	console.log("!!!!!! citation not SPECIFIED".red);
+	retCite = '[CITATION NOT SPECIFIED]';
     }
+
+    return retCite;
+}
+
+
+function type(o) {
+    var TYPES = {
+	'undefined' : 'undefined',
+	'number' : 'number',
+	'boolean' : 'boolean',
+	'string' : 'string',
+	'[object Function]' : 'function',
+	'[object RegExp]' : 'regexp',
+	'[object Array]' : 'array',
+	'[object Date]' : 'date',
+	'[object Error]' : 'error'
+    },
+    TOSTRING = Object.prototype.toString;
+
+    return TYPES[typeof o] || TYPES[toString.call(o)] || (o ? 'object' : 'null');
 }
 
 
 function citeAuthorsInline(auths) {
-    // FIXME This is causing stack overflow?? :(
-    return auths;
-
+    totalInlineCites++;
     var regexAnd = /\s+and\s+/;
     var authors = [];
     authors = auths.split(regexAnd);
+    console.log(".. ".magenta + authors.length + "\t<- ".cyan, " found this many authors");
     var names = [];
-    for (var i in authors) {
-	consoleMessage += "####>>>> Got author: " + authors[i] + "\n";
-	names.push( nameInline( authors[i] ) );
-    }
-    return names.join(", ");
+
+    authors.forEach(function(entry) {
+	names.push(nameInline(entry));
+    });
+
+    var ret = names.join(", ");
+    return ret;
 }
 
 
@@ -116,15 +140,15 @@ function refsAuthorsFromString(auths) {
     // Convert "John Smith and Davey Crocket and Linda Bateson"
     // to "Smith J, Crocket D, Bateson L".
 
-    // return auths; // FIXME
-
     var regexAnd = /\s+and\s+/;
     var authors = [];
     authors = auths.split(regexAnd);
     var names = [];
-    for (var i in authors) {
-	names.push( nameInlineRefs( authors[i] ) );
-    }
+
+    authors.forEach(function(entry) {
+	names.push(nameInlineRefs(entry));
+    });
+
     return names.join(", ");
 }
 
@@ -168,12 +192,16 @@ function nameInline(name) {
 }
 
 
-function findBibEntryByKey(bib, key) {
-    for (var e in bib) {
+function findBibEntryByKey(key) {
+    for (var e in bibtex) {
+
+	// console.log("...... ".magenta + "Testing " + key.toString.blue + " against " + e.toString.blue);
+
 	if (e.toUpperCase() === key.toUpperCase()) {
-	    return bib[e];
+	    return bibtex[e];
 	}
     }
+
     /*
     for(var i in bibtex.entries) {
 	if (bibtex.entries[i].EntryKey.toUpperCase() === key.toUpperCase()) {
@@ -187,21 +215,36 @@ function findBibEntryByKey(bib, key) {
 module.exports = {
     hooks: {
         init: function() {
+	    console.log('Bibtex citations plugin...'.magenta);
 	    myInit();
 	},
 
 	finish: function() {
-	    console.log(consoleMessage);
+	    console.log('.. '.magenta + totalInlineCites + "\t<- ".cyan + 'total number of inline citations');
+	    console.log('.. '.magenta + totalRefs + "\t<- ".cyan + 'total number of references');
+	    console.log('.. '.magenta + refs.length + "\t<- ".cyan + 'total number of references');
+	    console.log('Finished generating bibtex citations.'.magenta);
 	}
     },
 
     filters: {
 	cite: function(key) {
 	    if (key !== undefined) {
-		return myCite(key);
+		return myCite(key, true);
 	    } else {
 		return undefined;
 	    }
+	},
+	citeNoYear: function(key) {
+	    if (key !== undefined) {
+		return myCite(key, false);
+	    } else {
+		return undefined;
+	    }
+	},
+	citeYearOnly: function(key) {
+	    // FIXME!
+	    return '1999';
 	}
     },
 
@@ -210,63 +253,63 @@ module.exports = {
 
 	    process: function(block) {
 
-		var ret = '<ul>';
-		
-		for (var r in refs) {
-		    
-		    if (refs[r].AUTHOR || refs[r].TITLE) {
-			
-			ret = ret + '<li>';
-			
-			if (refs[r].AUTHOR) {
-			    // FIXME checkDNA() here
-			    if (checkDNA(refsAuthorsFromString(refs[r].AUTHOR))) {
-				// ret = ......
-			    }
-			    ret = ret + refsAuthorsFromString(refs[r].AUTHOR) + ', ';
+		var ret = '<ul>';		
+
+		refs.forEach(function(r) {
+
+		    // console.log("====> ".green + r.AUTHOR);
+
+		    ret = ret + '<li>';
+
+		    if (r.AUTHOR) {
+			if (checkDNA(r.AUTHOR)) {
+			    ret = ret + displayDNA(r.AUTHOR) + ' ';
 			} else {
-			    ret = ret + 'Unknown, ';
+			    ret = ret + refsAuthorsFromString(r.AUTHOR) + ' ';
 			}
-			
-			if (refs[r].YEAR) {
-			    ret = ret + '(' + refs[r].YEAR + '). ';
-			} else {
-			    ret = ret + '(n.d.). ';
-			}
-			
-			if (refs[r].TITLE) {
-			    ret = ret + '<b>' + displayDNA(refs[r].TITLE )+ '.</b> ';
-			} else {
-			    ret = ret + '<b>(Untitled.)</b> ';
-			}
-			
-			if (refs[r].JOURNAL) {
-			    ret = ret + '<i>' + displayDNA(refs[r].JOURNAL) + '</i>. ';
-			}
-			
-			if (refs[r].VOLUME) {
-			    ret = ret + '<b>' + refs[r].VOLUME + '</b> ';
-			}
-			
-			if (refs[r].ISSUE) {
-			    if (refs[r].VOLUME) {
-				ret = ret + '(' + refs[r].ISSUE + ') ';
-			    }
-			}
-			
-			if (refs[r].PAGES) {
-			    if (refs[r].PAGES.match(/\-/)) { ret = ret + 'p'; }
-			    ret = ret + 'p. ' + refs[r].PAGES + '. ';
-			}
-			
-			if (refs[r].URL) {
-			    ret = ret + 'Available online at <a href="' + refs[r].URL + '">' + refs[r].URL + '</a>';
-			}
-			
-			ret = ret + "\n";
+		    } else {
+			ret = ret + 'Unknown, ';
 		    }
-		    ret = ret + '</li>' + "\n";
-		}
+		    
+		    if (r.YEAR) {
+			ret = ret + '(' + r.YEAR + '). ';
+		    } else {
+			ret = ret + '(n.d.). ';
+		    }
+		    
+		    if (r.TITLE) {
+			ret = ret + '<b>' + displayDNA(r.TITLE) + '.</b> ';
+		    } else {
+			ret = ret + '<b>(Untitled.)</b> ';
+		    }
+
+		    if (r.JOURNAL) {
+			ret = ret + '<i>' + displayDNA(r.JOURNAL) + '</i>. ';
+		    }
+			
+		    if (r.VOLUME) {
+			ret = ret + '<b>' + r.VOLUME + '</b> ';
+		    }
+			
+		    if (r.ISSUE) {
+			if (r.VOLUME) {
+			    ret = ret + '(' + r.ISSUE + ') ';
+			}
+		    }
+			
+		    if (r.PAGES) {
+			if (r.PAGES.match(/\-/)) { ret = ret + 'p'; }
+			ret = ret + 'p. ' + r.PAGES + '. ';
+		    }
+			
+		    if (r.URL) {
+			ret = ret + 'Available online at <a href="' + r.URL + '">' + r.URL + '</a>';
+		    }
+
+		    ret = ret + '</li>';
+
+		});
+
 		return ret;
 	    }
 	}
