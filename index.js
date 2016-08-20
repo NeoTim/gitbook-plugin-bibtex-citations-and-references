@@ -60,29 +60,31 @@ function myCite(key) {
 		citation.used = true;
 		this.bibCount++;
 		citation.number = this.bibCount;
-            }
 	    
-	    var auth = citation.AUTHOR;
+		var auth = citation.AUTHOR;
+		
+		// Do not alter any string surrounded by { and }.
+		if (checkDNA(auth)) {
+		    return displayDNA(auth) + " (" + citation.YEAR + ")";
+		}
+		
+		/*
+		  var tocFile = undefined;
+		  try {
+		      tocFile = this.options.pluginsConfig.bibtex.tocfile;
+		  } catch (e) {
+		      // ...?
+		  }
+		  addToToc(tocFile, citation.number);
+		*/
 	    
-	    // Do not alter any string surrounded by { and }.
-	    if (checkDNA(auth)) {
-		return displayDNA(auth) + " (" + citation.YEAR + ")";
+		addToRefs(citation); // FIXME THe refs are huge and full of errors :(
+		
+		var r = citeAuthorsInline(auth) + " (" + citation.YEAR + ")";
+		return r;
+	    } else {
+		return undefined;
 	    }
-
-	    /*
-	    var tocFile = undefined;
-            try {
-		tocFile = this.options.pluginsConfig.bibtex.tocfile;
-            } catch (e) {
-		// ...?
-	    }
-	    addToToc(tocFile, citation.number);
-	    */
-	    
-	    addToRefs(citation); // FIXME THe refs are huge and full of errors :(
-
-	    var r = citeAuthorsInline(auth) + " (" + citation.YEAR + ")";
-	    return r;
 	} else {
 	    return '[CITATION NOT FOUND: "' + key + '"]';
 	}
@@ -196,62 +198,65 @@ module.exports = {
     },
 
     blocks: {
-	references: function() {
+	references: {
 
-	    var ret = '<ul>';
+	    process: function(block) {
 
-	    for (var r in refs) {
-
-		if (refs[r].AUTHOR || refs[r].TITLE) {
-
-		    ret = ret + '<li>';
-
-		    if (refs[r].AUTHOR) {
-			ret = ret + refsAuthorsFromString(refs[r].AUTHOR) + ', ';
-		    } else {
-			ret = ret + 'Unknown, ';
-		    }
+		var ret = '<ul>';
+		
+		for (var r in refs) {
 		    
-		    if (refs[r].YEAR) {
-			ret = ret + '(' + refs[r].YEAR + '). ';
-		    } else {
-			ret = ret + '(n.d.). ';
-		    }
-		    
-		    if (refs[r].TITLE) {
-			ret = ret + '<b>' + displayDNA(refs[r].TITLE )+ '.</b> ';
-		    } else {
-			ret = ret + '<b>(Untitled.)</b> ';
-		    }
-		    
-		    if (refs[r].JOURNAL) {
-			ret = ret + '<i>' + displayDNA(refs[r].JOURNAL) + '</i>. ';
-		    }
-		    
-		    if (refs[r].VOLUME) {
-			ret = ret + '<b>' + refs[r].VOLUME + '</b> ';
-		    }
-		    
-		    if (refs[r].ISSUE) {
-			if (refs[r].VOLUME) {
-			    ret = ret + '(' + refs[r].ISSUE + ') ';
+		    if (refs[r].AUTHOR || refs[r].TITLE) {
+			
+			ret = ret + '<li>';
+			
+			if (refs[r].AUTHOR) {
+			    ret = ret + refsAuthorsFromString(refs[r].AUTHOR) + ', ';
+			} else {
+			    ret = ret + 'Unknown, ';
 			}
+			
+			if (refs[r].YEAR) {
+			    ret = ret + '(' + refs[r].YEAR + '). ';
+			} else {
+			    ret = ret + '(n.d.). ';
+			}
+			
+			if (refs[r].TITLE) {
+			    ret = ret + '<b>' + displayDNA(refs[r].TITLE )+ '.</b> ';
+			} else {
+			    ret = ret + '<b>(Untitled.)</b> ';
+			}
+			
+			if (refs[r].JOURNAL) {
+			    ret = ret + '<i>' + displayDNA(refs[r].JOURNAL) + '</i>. ';
+			}
+			
+			if (refs[r].VOLUME) {
+			    ret = ret + '<b>' + refs[r].VOLUME + '</b> ';
+			}
+			
+			if (refs[r].ISSUE) {
+			    if (refs[r].VOLUME) {
+				ret = ret + '(' + refs[r].ISSUE + ') ';
+			    }
+			}
+			
+			if (refs[r].PAGES) {
+			    if (refs[r].PAGES.match(/\-/)) { ret = ret + 'p'; }
+			    ret = ret + 'p. ' + refs[r].PAGES + '. ';
+			}
+			
+			if (refs[r].URL) {
+			    ret = ret + 'Available online at <a href="' + refs[r].URL + '">' + refs[r].URL + '</a>';
+			}
+			
+			ret = ret + "\n";
 		    }
-		    
-		    if (refs[r].PAGES) {
-			if (refs[r].PAGES.match(/\-/)) { ret = ret + 'p'; }
-			ret = ret + 'p. ' + refs[r].PAGES + '. ';
-		    }
-		    
-		    if (refs[r].URL) {
-			ret = ret + 'Available online at <a href="' + refs[r].URL + '">' + refs[r].URL + '</a>';
-		    }
-		    
-		    ret = ret + "\n";
+		    ret = ret + '</li>' + "\n";
 		}
-		ret = ret + '</li>' + "\n";
+		return ret;
 	    }
-	    return ret;
 	}
     }
 }
