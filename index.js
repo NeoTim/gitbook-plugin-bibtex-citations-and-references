@@ -78,7 +78,7 @@ function myCite(key) {
 		  addToToc(tocFile, citation.number);
 		*/
 	    
-		addToRefs(citation); // FIXME THe refs are huge and full of errors :(
+		addToRefs(citation);
 		
 		var r = citeAuthorsInline(auth) + " (" + citation.YEAR + ")";
 		return r;
