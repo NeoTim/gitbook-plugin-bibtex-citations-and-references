@@ -7,12 +7,14 @@ var bibtexParse = require('bibtex-parser');
 // var bib2json = require('bib2json');
 
 var refs;
+var consoleMessage;
 
 function myInit() {
     // bibtex = bib2json(fs.readFileSync('literature.bib','utf8'));
     bibtex = bibtexParse(fs.readFileSync('literature.bib','utf8'));
     this.bibCount = 0;
     refs = [];
+    consoleMessage = '';
 }
 
 
@@ -103,7 +105,7 @@ function citeAuthorsInline(auths) {
     authors = auths.split(regexAnd);
     var names = [];
     for (var i in authors) {
-	console.err("####>>>> Got author: " + authors[i] );
+	consoleMessage += "####>>>> Got author: " + authors[i] + "\n";
 	names.push( nameInline( authors[i] ) );
     }
     return names.join(", ");
@@ -186,6 +188,10 @@ module.exports = {
     hooks: {
         init: function() {
 	    myInit();
+	},
+
+	finish: function() {
+	    console.log(consoleMessage);
 	}
     },
 
