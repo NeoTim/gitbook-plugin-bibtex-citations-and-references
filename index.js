@@ -93,6 +93,7 @@ function myCite(key) {
     }
 }
 
+
 function citeAuthorsInline(auths) {
     // FIXME This is causing stack overflow?? :(
     return auths;
@@ -102,26 +103,25 @@ function citeAuthorsInline(auths) {
     authors = auths.split(regexAnd);
     var names = [];
     for (var i in authors) {
-	var a = authors[i];
-	var b = nameInline(a);
-	names.push(b);
+	console.err("####>>>> Got author: " + authors[i] );
+	names.push( nameInline( authors[i] ) );
     }
     return names.join(", ");
 }
 
 
 function refsAuthorsFromString(auths) {
+    // Convert "John Smith and Davey Crocket and Linda Bateson"
+    // to "Smith J, Crocket D, Bateson L".
 
-    return auths; // FIXME
+    // return auths; // FIXME
 
     var regexAnd = /\s+and\s+/;
     var authors = [];
     authors = auths.split(regexAnd);
     var names = [];
     for (var i in authors) {
-	var a = authors[i];
-	var b = nameInlineRefs(a);
-	names.push(b);
+	names.push( nameInlineRefs( authors[i] ) );
     }
     return names.join(", ");
 }
@@ -129,6 +129,8 @@ function refsAuthorsFromString(auths) {
 
 function nameInlineRefs(name) {
     // Convert "Adam Smith" or "A Smith" to "Smith, A"
+    // Ignore "names" that already contain a comma.
+
     if (typeof name === 'string') {
 	var regexSpace = /\s+/;
 	var regexComma = /,/;
@@ -211,6 +213,10 @@ module.exports = {
 			ret = ret + '<li>';
 			
 			if (refs[r].AUTHOR) {
+			    // FIXME checkDNA() here
+			    if (checkDNA(refsAuthorsFromString(refs[r].AUTHOR))) {
+				// ret = ......
+			    }
 			    ret = ret + refsAuthorsFromString(refs[r].AUTHOR) + ', ';
 			} else {
 			    ret = ret + 'Unknown, ';
