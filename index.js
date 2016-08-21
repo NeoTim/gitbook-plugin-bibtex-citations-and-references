@@ -133,17 +133,17 @@ function citeAuthorsInline(auths) {
     var names = [];
 
     authors.forEach(function(entry) {
-        names.push(nameInline(entry));
+        names.push(inlineAuthorSurname(entry));
     });
 
     var ret;
 
     // Contract to "et al" if necessary
     if (names.length >= maxAuthorsInline) {
-	names[0] = nameInlineRefs(names[0]);
+	// names[0] = inlineAuthorSurame(names[0]);
 	ret = names[0] + " et al"
     } else {
-	// FIXME use nameInlineRefs() to convert name formats
+	// FIXME use inlineAuthorSurname() to convert name formats
 	ret = names.join(", ");
     }
     return ret;
@@ -160,50 +160,30 @@ function refsAuthorsFromString(auths) {
     var names = [];
 
     authors.forEach(function(entry) {
-        names.push(nameInlineRefs(entry));
+        names.push(inlineAuthorSurname(entry));
     });
 
     return names.join(", ");
 }
 
 
-function nameInlineRefs(name) {
-    // Convert "Adam Smith" or "A Smith" to "Smith, A"
-    // Ignore "names" that already contain a comma.
+function inlineAuthorSurname(name) {
+    // Convert "Adam Smith" or "A Smith" or "Smith, A" to "Smith"
 
     if (typeof name === 'string') {
         var regexSpace = /\s+/;
         var regexComma = /,/;
-        if (! name.match(regexComma)) {
-            var r = name.split(regexSpace);
-            r[0] = r[0].substring(0,1);
+        var r = name.split(regexSpace);
+
+	// If it contains a comma it's probably already in reverse order
+	if (! name.match(regexComma)) {
             r.reverse();
-            name = r.join(' ');
-        }
+	}
+        name = r[0];
     }
     return name;
 }
 
-
-function nameInline(name) {
-    // Convert "Smith, A" to "A Smith"
-
-    return name; // FIXME
-
-    if (typeof name === 'string') {
-        var regexComma = /,/;
-        var n = '';
-        if (name.match(regexComma)) {
-            var r = name.split(regexComma);
-            r.reverse();
-            n = r.join(' ');
-            // Convert "A Smith" (or "Adam Smith") to "Smith"
-            var all = n.split(/\s+/);
-            return all[all.length-1];
-        }
-    }
-    return name;
-}
 
 
 function findBibEntryByKey(key) {
