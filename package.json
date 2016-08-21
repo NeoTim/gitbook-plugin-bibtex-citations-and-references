@@ -1,6 +1,6 @@
 {
   "name": "gitbook-plugin-bibtex-citations-and-references",
-  "version": "0.4.12",
+  "version": "0.4.14",
   "description": "ALPHA TEST. Plugin for Gitbook that handles citations and references. Expects bibtex references. Produces VERY BASIC Harvard-type inline references and bibliography.",
   "engines": {
     "gitbook": ">=2.0.0"

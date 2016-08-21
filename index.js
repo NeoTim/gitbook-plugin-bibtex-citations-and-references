@@ -108,23 +108,20 @@ function myCite(key, year, braces) {
                 citation.used = true;
                 this.bibCount++;
                 citation.number = this.bibCount;
+	    }
 
-                addToRefs(citation);
+            addToRefs(citation);
 
-		var leftbrace = (braces ? "(" : "");
-		var rightbrace = (braces ? ")" : "");
+	    var leftbrace = (braces ? "(" : "");
+	    var rightbrace = (braces ? ")" : "");
 
-                // Do not alter any string surrounded by { and }.
-                if (checkDNA(citation.AUTHOR)) {
-                    retCite = displayDNA(citation.AUTHOR) + (year ? " " + leftbrace + citation.YEAR + rightbrace : "");
-                } else {
-                    retCite = citeAuthorsInline(citation.AUTHOR) + (year ? " " + leftbrace + citation.YEAR + rightbrace : "");
-                }
-
+            // Do not alter any string surrounded by { and }.
+            if (checkDNA(citation.AUTHOR)) {
+                retCite = displayDNA(citation.AUTHOR) + (year ? " " + leftbrace + citation.YEAR + rightbrace : "");
             } else {
-                // console.log("!!!!!! citation not USED".red);
-                retCite = undefined;
+                retCite = citeAuthorsInline(citation.AUTHOR) + (year ? " " + leftbrace + citation.YEAR + rightbrace : "");
             }
+
         } else {
             // console.log("!!!!!! citation not FOUND".red);
             retCite = '[CITATION NOT FOUND: "' + key + '"]';
