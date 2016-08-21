@@ -8,12 +8,13 @@ var colors = require('colors');
 // var bib2json = require('bib2json');
 
 var refs;
-
 var bibtex;
 
 // Keep track for info logged to console
 var totalInlineCites = 0;
 var totalRefs = 0;
+
+var maxAuthorsInline = 3; // This many or more will be contracted to "First-Author et al"
 
 function myInit() {
     // bibtex = bib2json(fs.readFileSync('literature.bib','utf8'));
@@ -58,7 +59,7 @@ function displayDNA(str) {
 }
 
 
-function myCite(key, year) {
+function myCite(key, year, braces) {
 
     var retCite;
 
@@ -74,16 +75,19 @@ function myCite(key, year) {
                 citation.used = true;
                 this.bibCount++;
                 citation.number = this.bibCount;
-            
+
                 addToRefs(citation);
+
+		var leftbrace = (braces ? "(" : "");
+		var rightbrace = (braces ? ")" : "");
 
                 // Do not alter any string surrounded by { and }.
                 if (checkDNA(citation.AUTHOR)) {
-                    retCite = displayDNA(citation.AUTHOR) + (year ? " (" + citation.YEAR + ")" : "");
+                    retCite = displayDNA(citation.AUTHOR) + (year ? " " + leftbrace + citation.YEAR + rightbrace : "");
                 } else {
-                    retCite = citeAuthorsInline(citation.AUTHOR) + (year ? " (" + citation.YEAR + ")" : "");
+                    retCite = citeAuthorsInline(citation.AUTHOR) + (year ? " " + leftbrace + citation.YEAR + rightbrace : "");
                 }
-                
+
             } else {
                 // console.log("!!!!!! citation not USED".red);
                 retCite = undefined;
@@ -132,7 +136,16 @@ function citeAuthorsInline(auths) {
         names.push(nameInline(entry));
     });
 
-    var ret = names.join(", ");
+    var ret;
+
+    // Contract to "et al" if necessary
+    if (names.length >= maxAuthorsInline) {
+	names[0] = nameInlineRefs(names[0]);
+	ret = names[0] + " et al"
+    } else {
+	// FIXME use nameInlineRefs() to convert name formats
+	ret = names.join(", ");
+    }
     return ret;
 }
 
@@ -231,14 +244,28 @@ module.exports = {
     filters: {
         cite: function(key) {
             if (key !== undefined) {
-                return myCite(key, true);
+                return myCite(key, true, true);
+            } else {
+                return undefined;
+            }
+        },
+        citeNoBraces: function(key) {
+            if (key !== undefined) {
+                return myCite(key, true, false);
             } else {
                 return undefined;
             }
         },
         citeNoYear: function(key) {
             if (key !== undefined) {
-                return myCite(key, false);
+                return myCite(key, false, true);
+            } else {
+                return undefined;
+            }
+        },
+        citeNoYearNoBraces: function(key) {
+            if (key !== undefined) {
+                return myCite(key, false, false);
             } else {
                 return undefined;
             }
@@ -259,6 +286,9 @@ module.exports = {
                 refs.forEach(function(r) {
 
                     // console.log("====> ".green + r.AUTHOR);
+
+		    // FIXME Build this using an array instead of concatenating strings.
+		    // FIXME Sort the list by author names!
 
                     ret = ret + '<li>';
 
@@ -289,22 +319,33 @@ module.exports = {
                     }
 
                     if (r.VOLUME) {
-                        ret = ret + '<b>' + r.VOLUME + '</b> ';
+                        ret = ret + '<b>';
+			if ( (! r.ISSUE) && (! r.NUMBER) ) {
+			    ret = ret + 'vol ';
+			}
+			ret = ret + r.VOLUME + '</b> ';
                     }
 
                     if (r.ISSUE) {
-                        if (r.VOLUME) {
-                            ret = ret + '(' + r.ISSUE + ') ';
-                        }
+                        ret = ret + '(' + r.ISSUE + ') ';
+                    }
+
+                    if (r.NUMBER) {
+			if ( (r.VOLUME) || (r.ISSUE) ) {
+			    ret = ret + ':';
+			} else {
+			    ret = ret + 'num ';
+			}
+                        ret = ret + r.NUMBER + '. ';
                     }
 
                     if (r.PAGES) {
                         if (r.PAGES.match(/\-/)) { ret = ret + 'p'; }
                         ret = ret + 'p. ' + r.PAGES + '. ';
                     }
-
-		    if (! ret.match(/\.\s*$/)) {
-			ret = ret + '. ';
+		    
+		    if (! ret.match(/\. $/)) {
+			// ret = ret + '. '; // FIXME
 		    }
 
                     if (r.URL) {
