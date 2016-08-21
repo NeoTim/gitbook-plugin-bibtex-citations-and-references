@@ -271,13 +271,13 @@ module.exports = {
                     } else {
                         ret = ret + 'Unknown, ';
                     }
-                    
+
                     if (r.YEAR) {
                         ret = ret + '(' + r.YEAR + '). ';
                     } else {
                         ret = ret + '(n.d.). ';
                     }
-                    
+
                     if (r.TITLE) {
                         ret = ret + '<b>' + displayDNA(r.TITLE) + '.</b> ';
                     } else {
@@ -287,22 +287,26 @@ module.exports = {
                     if (r.JOURNAL) {
                         ret = ret + '<i>' + displayDNA(r.JOURNAL) + '</i>. ';
                     }
-                        
+
                     if (r.VOLUME) {
                         ret = ret + '<b>' + r.VOLUME + '</b> ';
                     }
-                        
+
                     if (r.ISSUE) {
                         if (r.VOLUME) {
                             ret = ret + '(' + r.ISSUE + ') ';
                         }
                     }
-                        
+
                     if (r.PAGES) {
                         if (r.PAGES.match(/\-/)) { ret = ret + 'p'; }
                         ret = ret + 'p. ' + r.PAGES + '. ';
                     }
-                        
+
+		    if (! ret.match(/\.\s*$/)) {
+			ret = ret + '. ';
+		    }
+
                     if (r.URL) {
                         ret = ret + 'Available online at <a href="' + r.URL + '">' + r.URL + '</a>';
                     }
