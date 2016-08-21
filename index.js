@@ -59,6 +59,39 @@ function displayDNA(str) {
 }
 
 
+function myCiteYearOnly(key, braces) {
+
+    var retCite = '';
+
+    if (key !== undefined) {
+        var citation = findBibEntryByKey(key);
+
+        // console.log('.. '.magenta + "found citation with key: " + key);
+        // console.log('.... '.magenta + "with citation: " + citation.toString);
+
+        if (citation !== undefined) {
+
+            if (!citation.used) {
+                citation.used = true;
+                this.bibCount++;
+                citation.number = this.bibCount;
+
+                addToRefs(citation);
+
+	    }
+
+	    var leftbrace = (braces ? "(" : "");
+	    var rightbrace = (braces ? ")" : "");
+
+	    if (citation.YEAR) {
+		retCite = leftbrace + citation.YEAR + rightbrace;
+	    }
+	}
+    }
+
+    return retCite;
+}
+
 function myCite(key, year, braces) {
 
     var retCite;
@@ -144,13 +177,17 @@ function citeAuthorsInline(auths) {
 	ret = names[0] + " et al"
     } else {
 	// FIXME use inlineAuthorSurname() to convert name formats
-	ret = names.join(", ");
+	if (names.length === 2) {
+	    ret = names.join(" and ");
+	} else {
+	    ret = names.join(", ");
+	}
     }
     return ret;
 }
 
 
-function refsAuthorsFromString(auths) {
+function refsAuthors(auths) {
     // Convert "John Smith and Davey Crocket and Linda Bateson"
     // to "Smith J, Crocket D, Bateson L".
 
@@ -160,7 +197,7 @@ function refsAuthorsFromString(auths) {
     var names = [];
 
     authors.forEach(function(entry) {
-        names.push(inlineAuthorSurname(entry));
+        names.push(inlineAuthorSurnameAndInitial(entry));
     });
 
     return names.join(", ");
@@ -180,6 +217,25 @@ function inlineAuthorSurname(name) {
             r.reverse();
 	}
         name = r[0];
+    }
+    return name;
+}
+
+
+
+function inlineAuthorSurnameAndInitial(name) {
+    // Convert "Adam Smith" or "A Smith" or "Smith, A" to "Smith A"
+
+    if (typeof name === 'string') {
+        var regexSpace = /\s+/;
+        var regexComma = /,/;
+        var r = name.split(regexSpace);
+
+	// If it contains a comma it's probably already in reverse order
+	if (! name.match(regexComma)) {
+            r.reverse();
+	}
+        name = r[0] + " " + r[r.length-1].substr(0,1);
     }
     return name;
 }
@@ -251,8 +307,18 @@ module.exports = {
             }
         },
         citeYearOnly: function(key) {
-            // FIXME!
-            return '1999';
+            if (key !== undefined) {
+                return myCiteYearOnly(key, true);
+            } else {
+                return undefined;
+            }
+        },
+        citeYearOnlyNoBraces: function(key) {
+            if (key !== undefined) {
+                return myCiteYearOnly(key, false);
+            } else {
+                return undefined;
+            }
         }
     },
 
@@ -276,7 +342,7 @@ module.exports = {
                         if (checkDNA(r.AUTHOR)) {
                             ret = ret + displayDNA(r.AUTHOR) + ' ';
                         } else {
-                            ret = ret + refsAuthorsFromString(r.AUTHOR) + ' ';
+                            ret = ret + refsAuthors(r.AUTHOR) + ' ';
                         }
                     } else {
                         ret = ret + 'Unknown, ';
