@@ -37,12 +37,12 @@
   "homepage": "https://github.com/austinjp/gitbook-plugin-bibtex-citations-and-references#readme",
   "dependencies": {
     "bibtex-parser": ">=0.0.0",
-    "fs": "~0.0.2",
+    "fs": ">=0.0.2",
     "colors": ">=1.1.2"
   },
   "devDependencies": {
     "bibtex-parser": ">=0.0.0",
-    "fs": "~0.0.2",
+    "fs": ">=0.0.2",
     "colors": ">=1.1.2"
   }
 }
