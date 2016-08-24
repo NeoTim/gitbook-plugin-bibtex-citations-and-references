@@ -40,7 +40,11 @@
     "colors": ">=1.1.2"
   },
   "devDependencies": {
+    "bib2json": "0.0.1",
     "bibtex-parser": ">=0.0.0",
-    "colors": ">=1.1.2"
+    "citeproc-js-node": "0.0.2",
+    "colors": ">=1.1.2",
+    "glob": "^7.0.5",
+    "xmljson": "^0.2.0"
   }
 }
