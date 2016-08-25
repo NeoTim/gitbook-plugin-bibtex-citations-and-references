@@ -5,7 +5,7 @@ var path = require('path');
 var util = require('util');
 var bibtexParse = require('bibtex-parser');
 var colors = require('colors');
-// var bib2json = require('bib2json');
+var b2cj = require("bibtex-to-csl-json").b2cj;
 
 var refs;
 var bibtex;
@@ -17,7 +17,6 @@ var totalRefs = 0;
 var maxAuthorsInline = 3; // This many or more will be contracted to "First-Author et al"
 
 function myInit() {
-    // bibtex = bib2json(fs.readFileSync('literature.bib','utf8'));
     bibtex = bibtexParse(fs.readFileSync('literature.bib','utf8'));
     this.bibCount = 0;
     refs = [];
@@ -320,6 +319,7 @@ module.exports = {
     },
 
     blocks: {
+
         references: {
 
             process: function(block) {
@@ -401,6 +401,20 @@ module.exports = {
 
                 return ret;
             }
-        }
+        },
+	
+	refcsl: {
+	    process: function(block) {
+		var cslJson, bibfile, lang, localesfiles, cslfile;
+		if (typeof block === "undefined") {
+		    // Attempt some defaults
+		    bibfile = "./literature.bib";
+		    lang = "en-GB";
+		    localesfile = "./assets/csl/locales/locales-en-GB.xml";
+		    cslfile = "./assets/csl/styles/harvard-imperial-college-london.csl";
+		}
+		var cslJson = b2cj.parsefile(bibfile, lang, localesfile, cslfile);
+	    }
+	}
     }
 }

@@ -11,3 +11,5 @@ console.log(cite.filters.cite('Wallace2013'));
 console.log("\nGenerated the following bibliography:\n")
 console.log(cite.blocks.references.process());
 
+console.log("\nGenerated the following bibliography based on CSL:\n")
+console.log(cite.blocks.refcsl.process());
