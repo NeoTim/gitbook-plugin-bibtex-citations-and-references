@@ -5,8 +5,7 @@ var path = require('path');
 var util = require('util');
 var bibtexParse = require('bibtex-parser');
 var colors = require('colors');
-var b2cj = require("bibtex-to-csl-json").b2cj;
-
+var b = require("bibtex-to-csl-json");
 var refs;
 var bibtex;
 
@@ -405,15 +404,26 @@ module.exports = {
 	
 	refcsl: {
 	    process: function(block) {
-		var cslJson, bibfile, lang, localesfiles, cslfile;
-		if (typeof block === "undefined") {
-		    // Attempt some defaults
-		    bibfile = "./literature.bib";
-		    lang = "en-GB";
-		    localesfile = "./assets/csl/locales/locales-en-GB.xml";
-		    cslfile = "./assets/csl/styles/harvard-imperial-college-london.csl";
-		}
-		var cslJson = b2cj.parsefile(bibfile, lang, localesfile, cslfile);
+		var cslJson, bibliography, bibfile, lang, localesfiles, cslfile;
+
+		// Attempt some defaults
+		bibfile = "./literature.bib";
+		lang = "en-GB";
+		localesfile = "./assets/csl/locales/locales-en-GB.xml";
+		cslfile = "./assets/csl/styles/harvard-imperial-college-london.csl";
+		
+		var b2cj = b.b2cj(bibfile, lang, localesfile, cslfile);
+		
+		console.log(util.inspect(b2cj,true,null,true));
+
+		var ret = "";
+		// cslJson = (typeof b2cj[0] !== "undefined" && b2cj[0].csljson) ? b2cj[0].csljson : undefined;
+		ret = b2cj.bibliography[0].bibstart;
+		b2cj.bibliography[1].forEach(function(entry) {
+		    ret += entry;
+		});
+		ret += b2cj.bibliography[0].bibend;
+		return ret;
 	    }
 	}
     }
