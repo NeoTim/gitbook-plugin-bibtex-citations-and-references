@@ -410,7 +410,8 @@ module.exports = {
 		bibfile = "./literature.bib";
 		lang = "en-GB";
 		localesfile = "./assets/csl/locales/locales-en-GB.xml";
-		cslfile = "./assets/csl/styles/harvard-imperial-college-london.csl";
+		// cslfile = "./assets/csl/styles/harvard-imperial-college-london.csl";
+		cslfile = "./assets/csl/styles/american-psychological-association-6th-edition-patched.csl";
 		
 		var b2cj = b.b2cj(bibfile, lang, localesfile, cslfile);
 		
