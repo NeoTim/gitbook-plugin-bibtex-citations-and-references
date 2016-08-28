@@ -2,7 +2,7 @@
 
 var fs = require('fs');
 var path = require('path');
-var util = require('util');
+// var util = require('util');
 var bibtexParse = require('bibtex-parser');
 var colors = require('colors');
 var b = require("bibtex-to-csl-json");
@@ -406,16 +406,13 @@ module.exports = {
 	    process: function(block) {
 		var cslJson, bibliography, bibfile, lang, localesfiles, cslfile;
 
-		// Attempt some defaults
-		bibfile = "./literature.bib";
-		lang = "en-GB";
-		localesfile = "./assets/csl/locales/locales-en-GB.xml";
-		// cslfile = "./assets/csl/styles/harvard-imperial-college-london.csl";
-		cslfile = "./assets/csl/styles/american-psychological-association-6th-edition-patched.csl";
-		
+		// Read vars, use defaults if necessary
+		bibfile = block.args[0] ? block.args[0] : "./literature.bib";
+		lang = block.args[1] ? block.args[1] : "en-GB";
+		localesfile = block.args[2] ? block.args[2] : "./assets/csl/locales/locales-en-GB.xml";
+		cslfile = block.args[3] ? block.args[3] : "./assets/csl/styles/harvard-imperial-college-london.csl";
+
 		var b2cj = b.b2cj(bibfile, lang, localesfile, cslfile);
-		
-		// console.log(util.inspect(b2cj,true,null,true));
 
 		var ret = "";
 		// cslJson = (typeof b2cj[0] !== "undefined" && b2cj[0].csljson) ? b2cj[0].csljson : undefined;
