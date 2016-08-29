@@ -413,7 +413,7 @@ module.exports = {
 		cslfile = block.args[3] ? block.args[3] : "./assets/csl/styles/harvard-imperial-college-london.csl";
 
 		var b2cj = b.b2cj(bibfile, lang, localesfile, cslfile);
-		console.log(util.inspect(b2cj,true,null,true));
+		// console.log(util.inspect(b2cj,true,null,true));
 
 		var ret = "";
 		// cslJson = (typeof b2cj[0] !== "undefined" && b2cj[0].csljson) ? b2cj[0].csljson : undefined;
