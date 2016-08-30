@@ -11,17 +11,17 @@ var bibtex;
 
 // Keep track for info logged to console
 var totalInlineCites = 0;
-var totalRefs = 0;
 
 var maxAuthorsInline = 3; // This many or more will be contracted to "First-Author et al"
 
 function myInit() {
     bibtex = bibtexParse(fs.readFileSync('literature.bib','utf8'));
     this.bibCount = 0;
-    refs = [];
+    refs = {};
 }
 
 
+/*
 function addToToc(file, num) {
     if (file !== undefined) {
         return '<a href="' + file + '.html#cite-' + num + '">[' + num + ']</a>';
@@ -29,12 +29,15 @@ function addToToc(file, num) {
         return '<a href="#cite-' + num + '">[' + num + ']</a>';
     }
 }
+*/
 
 
 function addToRefs(citation) {
-    if (citation.AUTHOR || citation.TITLE || citation.URL) {
-        refs.push(citation);
-        totalRefs++;
+    if (citation.number && !refs[citation.number]) {
+	// console.log("==> ".magenta + "Added citation number ".green + citation.number);
+	refs[citation.number] = citation;
+    } else {
+	// console.log("==> ".red + "Did NOT add citation number ".green + citation.number);
     }
 }
 
@@ -236,6 +239,12 @@ function inlineAuthorSurnameAndInitial(name) {
 }
 
 
+function trimCruft(s) {
+    s = s.replace(/\s+$/, "");
+    s = s.replace(/\.+$/, "");
+    return s;
+}
+
 
 function findBibEntryByKey(key) {
     for (var e in bibtex) {
@@ -260,15 +269,14 @@ function findBibEntryByKey(key) {
 module.exports = {
     hooks: {
         init: function() {
-            console.log('Bibtex citations plugin...'.magenta);
+            console.log('Bibtex citations and references plugin...'.magenta);
             myInit();
         },
 
         finish: function() {
-            console.log('.. '.magenta + totalInlineCites + "\t<- ".cyan + 'total number of inline citations');
-            // console.log('.. '.magenta + totalRefs + "\t<- ".cyan + 'total number of references');
-            console.log('.. '.magenta + refs.length + "\t<- ".cyan + 'total number of references');
-            console.log('Finished generating bibtex citations.'.magenta);
+            console.log('.. '.magenta + totalInlineCites + "\t<- ".cyan + "total number of inline citations you didn't have to fiddle with!");
+            console.log('.. '.magenta + Object.keys(refs).length + "\t<- ".cyan + "total number of references you didn't have to edit repeatedly!");
+            console.log('Finished generating bibtex citations and references.'.magenta);
         }
     },
 
@@ -323,87 +331,100 @@ module.exports = {
 
             process: function(block) {
 
-                var ret = '<ul>';               
+                var ret = '<ul class="b2cj-references">';
 
-                refs.forEach(function(r) {
+		for (var key in refs) {
+		    var r = refs[key];
 
-                    // console.log("====> ".green + r.AUTHOR);
+                    // console.log("====> ".green + util.inspect(r,true,null,true).blue);
 
 		    // FIXME Build this using an array instead of concatenating strings.
 		    // FIXME Sort the list by author names!
-
-                    ret = ret + '<li>';
+		    // FIXME Get rid of horrible nested ifs.
+		    
+                    ret = ret + '<li class="b2cj-ref-item" id="b2cj-ref-item-' + r.number + '">';
 
                     if (r.AUTHOR) {
                         if (checkDNA(r.AUTHOR)) {
                             ret = ret + displayDNA(r.AUTHOR) + ' ';
                         } else {
-                            ret = ret + refsAuthors(r.AUTHOR) + ' ';
+                            ret = ret + refsAuthors(trimCruft(r.AUTHOR)) + ' ';
                         }
                     } else {
-                        ret = ret + 'Unknown, ';
+                        ret = ret + 'Unknown ';
                     }
-
+		    
                     if (r.YEAR) {
-                        ret = ret + '(' + r.YEAR + '). ';
+                        ret = ret + '(' + trimCruft(r.YEAR) + '). ';
                     } else {
                         ret = ret + '(n.d.). ';
                     }
-
+		    
                     if (r.TITLE) {
-                        ret = ret + '<b>' + displayDNA(r.TITLE) + '.</b> ';
-                    } else {
+			if (checkDNA(r.TITLE)) {
+                            ret = ret + '<b>' + displayDNA(r.TITLE) + '</b> ';
+			} else {
+                            ret = ret + '<b>' + trimCruft(r.TITLE) + '</b> ';
+			}
+		    } else {
                         ret = ret + '<b>(Untitled.)</b> ';
                     }
-
+		    
                     if (r.JOURNAL) {
-                        ret = ret + '<i>' + displayDNA(r.JOURNAL) + '</i>. ';
-                    }
-
-                    if (r.VOLUME) {
-                        ret = ret + '<b>';
-			if ( (! r.ISSUE) && (! r.NUMBER) ) {
-			    ret = ret + 'vol ';
-			}
-			ret = ret + r.VOLUME + '</b> ';
-                    }
-
-                    if (r.ISSUE) {
-                        ret = ret + '(' + r.ISSUE + ') ';
-                    }
-
-                    if (r.NUMBER) {
-			if ( (r.VOLUME) || (r.ISSUE) ) {
-			    ret = ret + ':';
+			if (checkDNA(r.JOURNAL)) {
+                            ret = ret + '<i>' + displayDNA(r.JOURNAL) + '</i>. ';
 			} else {
-			    ret = ret + 'num ';
+                            ret = ret + '<i>' + trimCruft(r.JOURNAL) + '</i>. ';
 			}
-                        ret = ret + r.NUMBER + '. ';
-                    }
-
-                    if (r.PAGES) {
-                        if (r.PAGES.match(/\-/)) { ret = ret + 'p'; }
-                        ret = ret + 'p. ' + r.PAGES + '. ';
                     }
 		    
-		    if (! ret.match(/\. $/)) {
-			// ret = ret + '. '; // FIXME
-		    }
-
+                    if (r.VOLUME) {
+			if (checkDNA(r.VOLUME)) {
+                            ret = ret + '<b>' + displayDNA(r.VOLUME) + '</b>';
+			} else {
+			    ret = ret + '<b>' + trimCruft(r.VOLUME) + '</b>';
+			}
+			if (! r.NUMBER) {
+			    ret = ret + ' ';
+			}
+                    }
+		    
+                    if (r.NUMBER) {
+			if (checkDNA(r.NUMBER)) {
+                            ret = ret + '(' + displayDNA(r.NUMBER) + ')';
+			} else {
+                            ret = ret + '(' + trimCruft(r.NUMBER) + ')';
+			}
+			if (r.PAGES) {
+			    ret = ret + '.';
+			}
+			ret = ret + ' ';
+                    }
+		    
+                    if (r.PAGES) {
+			if (r.PAGES.match(/\-/)) { ret = ret + 'p'; }
+			if (checkDNA(r.PAGES)) {
+                            ret = ret + 'p.' + displayDNA(r.PAGES) + '. ';
+			} else {
+                            ret = ret + 'p.' + trimCruft(r.PAGES) + '. ';
+			}
+                    }
+		    
                     if (r.URL) {
                         ret = ret + 'Available online at <a href="' + r.URL + '">' + r.URL + '</a>';
                     }
-
-                    ret = ret + '</li>';
-
-                });
-
-                return ret;
+		    
+                    ret = ret + '</li>' + "\n\n";
+		    
+                };
+	    
+		return "\n\n" + ret + "\n\n";
             }
         },
 	
 	refcsl: {
 	    process: function(block) {
+		// FIXME Warning -- do not use this function yet! Very much ALPHA QUALITY :)
 		var cslJson, bibliography, bibfile, lang, localesfiles, cslfile;
 
 		// Read vars, use defaults if necessary
