@@ -1,5 +1,6 @@
 // Strongly influenced by https://github.com/leandrocostasouza/gitbook-plugin-bibtex
 
+var tmp = require('tmp');
 var fs = require('fs');
 var path = require('path');
 var util = require('util');
@@ -32,12 +33,13 @@ function addToToc(file, num) {
 */
 
 
-function addToRefs(citation) {
-    if (citation.number && !refs[citation.number]) {
-	// console.log("==> ".magenta + "Added citation number ".green + citation.number);
-	refs[citation.number] = citation;
+function addToRefs(citation,key) {
+    if (citation.num && !refs[citation.num]) {
+	// console.log("==> ".magenta + "Added citation number ".green + citation.num);
+	refs[citation.num] = citation;
+	refs[citation.num]["KEY"] = key;
     } else {
-	// console.log("==> ".red + "Did NOT add citation number ".green + citation.number);
+	// console.log("==> ".red + "Did NOT add citation number ".green + citation.num);
     }
 }
 
@@ -75,9 +77,9 @@ function myCiteYearOnly(key, braces) {
             if (!citation.used) {
                 citation.used = true;
                 this.bibCount++;
-                citation.number = this.bibCount;
+                citation.num = this.bibCount;
 
-                addToRefs(citation);
+                addToRefs(citation,key);
 
 	    }
 
@@ -108,10 +110,10 @@ function myCite(key, year, braces) {
             if (!citation.used) {
                 citation.used = true;
                 this.bibCount++;
-                citation.number = this.bibCount;
+                citation.num = this.bibCount;
 	    }
 
-            addToRefs(citation);
+            addToRefs(citation,key);
 
 	    var leftbrace = (braces ? "(" : "");
 	    var rightbrace = (braces ? ")" : "");
@@ -342,7 +344,7 @@ module.exports = {
 		    // FIXME Sort the list by author names!
 		    // FIXME Get rid of horrible nested ifs.
 		    
-                    ret = ret + '<li class="b2cj-ref-item" id="b2cj-ref-item-' + r.number + '">';
+                    ret = ret + '<li class="b2cj-ref-item" id="b2cj-ref-item-' + r.num + '">';
 
                     if (r.AUTHOR) {
                         if (checkDNA(r.AUTHOR)) {
@@ -425,20 +427,81 @@ module.exports = {
 	refcsl: {
 	    process: function(block) {
 		// FIXME Warning -- do not use this function yet! Very much ALPHA QUALITY :)
-		var cslJson, bibliography, bibfile, lang, localesfiles, cslfile;
+		var cslJson, bibliography, bibfile, bibfile_sparse, bibtex_sparse, lang, localesfiles, cslfile, sparse;
 
 		// Read vars, use defaults if necessary
 		bibfile = block.args[0] ? block.args[0] : "./literature.bib";
 		lang = block.args[1] ? block.args[1] : "en-GB";
 		localesfile = block.args[2] ? block.args[2] : "./assets/csl/locales/locales-en-GB.xml";
 		cslfile = block.args[3] ? block.args[3] : "./assets/csl/styles/harvard-imperial-college-london.csl";
+		sparse = block.args[4] ? (block.args[4].toUpperCase() === "TRUE" ? true : false) : false;
 
-		var b2cj = b.b2cj(bibfile, lang, localesfile, cslfile);
+
+		// FIXME Create "sparse" version of literature.bib that
+		// only contains entries that have been used.
+		// FIXME This could be done far more efficiently :)
+
+		bibtex_sparse = {};
+		for (var k in refs) {
+		    if (refs.hasOwnProperty(k)) {
+			// Use refs[k]["KEY"] in comparison with bibtex var
+			for (var bt in bibtex) {
+			    if (bibtex.hasOwnProperty(bt)) {
+				if (refs[k]["KEY"].toUpperCase() === bt.toUpperCase()) {
+				    if (bibtex_sparse[bt.toUpperCase()] === undefined) {
+					bibtex_sparse[bt.toUpperCase()] = refs[k];
+				    }
+				}
+			    }
+			}
+		    }
+		}
+		// console.log(util.inspect(bibtex_sparse,true,null,true));
+
+		bibfile_sparse = tmp.fileSync({ prefix: 'bibtex-parser-tempfile-', postfix: '.bib' });
+		/*
+		fs.writeFileSync(bibfile_sparse.fd, "test", (err) => {
+		    if (err) throw err;
+		});
+		*/
+		var stream = fs.createWriteStream(bibfile_sparse.name);
+		stream.once('open', function(fd) {
+		    for (var bs in bibtex_sparse) {
+			if (bibtex_sparse.hasOwnProperty(bs)) {
+			    var t = bibtex_sparse[bs];
+			    // console.log("@" + t.entryType + "{" + t.KEY + ",");
+			    stream.write("@" + t.entryType + "{" + t.KEY + ",\n");
+			    for (var k in t) {
+				if (t.hasOwnProperty(k)) {
+				    // FIXME These should be moved into citations.meta.num or similar
+				    if (k.toUpperCase() != "NUM" &&
+					k.toUpperCase() != "USED" &&
+					k.toUpperCase() != "ENTRYTYPE" &&
+					k.toUpperCase() != "KEY"
+				       ) {
+					// console.log(k + ": {" + t[k] + "},");
+					stream.write(k + ": {" + t[k] + "},\n");
+				    }
+				}
+			    }
+			    // console.log("}");
+			    stream.write("}\n");
+			}
+		    }
+		    stream.end();
+		});
+
+
+		// var b2cj = b.b2cj(bibfile, lang, localesfile, cslfile);
+		var b2cj = b.b2cj(bibfile_sparse.name, lang, localesfile, cslfile);
 		// console.log(util.inspect(b2cj,true,null,true));
 
 		var ret = "";
 		// cslJson = (typeof b2cj[0] !== "undefined" && b2cj[0].csljson) ? b2cj[0].csljson : undefined;
 		ret = b2cj.bibliography[0].bibstart;
+
+		// console.log("====>>>>".yellow + ": " + util.inspect(refs,true,null,true))
+
 		b2cj.bibliography[1].forEach(function(entry) {
 		    ret += entry;
 		});
