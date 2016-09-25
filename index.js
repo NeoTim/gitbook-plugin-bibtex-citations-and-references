@@ -9,6 +9,7 @@ var colors = require('colors');
 var b = require("bibtex-to-csl-json");
 var refs;
 var bibtex;
+var bibfile_sparse;
 
 // Keep track for info logged to console
 var totalInlineCites = 0;
@@ -16,9 +17,18 @@ var totalInlineCites = 0;
 var maxAuthorsInline = 3; // This many or more will be contracted to "First-Author et al"
 
 function myInit() {
-    bibtex = bibtexParse(fs.readFileSync('literature.bib','utf8'));
+    try {
+	bibtex = bibtexParse(fs.readFileSync('literature.bib','utf8'));
+    } catch(e) {
+	throw e;
+    }
     this.bibCount = 0;
     refs = {};
+    try {
+	bibfile_sparse = tmp.fileSync({ prefix: 'bibtex-parser-tempfile-', postfix: '.bib', keep: true });
+    } catch(e) {
+	throw e;
+    }
 }
 
 
@@ -277,7 +287,7 @@ module.exports = {
 
         finish: function() {
             console.log('.. '.magenta + totalInlineCites + "\t<- ".cyan + "total number of inline citations you didn't have to fiddle with!");
-            console.log('.. '.magenta + Object.keys(refs).length + "\t<- ".cyan + "total number of references you didn't have to edit repeatedly!");
+            console.log('.. '.magenta + Object.keys(refs).length + "\t<- ".cyan + "total number of references you didn't have to style manually or edit repeatedly!");
             console.log('Finished generating bibtex citations and references.'.magenta);
         }
     },
@@ -426,8 +436,9 @@ module.exports = {
 	
 	refcsl: {
 	    process: function(block) {
-		// FIXME Warning -- do not use this function yet! Very much ALPHA QUALITY :)
-		var cslJson, bibliography, bibfile, bibfile_sparse, bibtex_sparse, lang, localesfiles, cslfile, sparse;
+		// FIXME Warning -- this is VERY MUCH BETA QUALITY -- use at your own risk!
+
+		var cslJson, bibliography, bibfile, lang, localesfiles, cslfile, sparse;
 
 		// Read vars, use defaults if necessary
 		bibfile = block.args[0] ? block.args[0] : "./literature.bib";
@@ -437,75 +448,47 @@ module.exports = {
 		sparse = block.args[4] ? (block.args[4].toUpperCase() === "TRUE" ? true : false) : false;
 
 
-		// FIXME Create "sparse" version of literature.bib that
-		// only contains entries that have been used.
-		// FIXME This could be done far more efficiently :)
+		// This would create a bibliography with everything from literature.bib
+		// Instead below let's create a "sparse" version instead.
+		// var b2cj = b.b2cj(bibfile, lang, localesfile, cslfile);
 
-		bibtex_sparse = {};
-		for (var k in refs) {
-		    if (refs.hasOwnProperty(k)) {
-			// Use refs[k]["KEY"] in comparison with bibtex var
-			for (var bt in bibtex) {
-			    if (bibtex.hasOwnProperty(bt)) {
-				if (refs[k]["KEY"].toUpperCase() === bt.toUpperCase()) {
-				    if (bibtex_sparse[bt.toUpperCase()] === undefined) {
-					bibtex_sparse[bt.toUpperCase()] = refs[k];
-				    }
+
+		// Recreate a sparse file with only the refs that have been used.
+		// FIXME Coud probably be done with proper bib parsing instead of strings :(
+		for (var c in refs) {
+		    if (refs.hasOwnProperty(c)) {
+			fs.appendFileSync(bibfile_sparse.name, "\n@" + refs[c]["entryType"] + "{" + refs[c]["KEY"] + ",\n");
+			for (var k in refs[c]) {
+			    if (refs[c].hasOwnProperty(k)) {
+				if (k.toUpperCase() != "KEY" &&
+				    k.toUpperCase() != "ENTRYTYPE" &&
+				    k.toUpperCase() != "USED" &&
+				    k.toUpperCase() != "NUM"
+				   ) {
+				    fs.appendFileSync(bibfile_sparse.name, "  " + k + " = {" + refs[c][k] + "},\n");
 				}
 			    }
 			}
+			fs.appendFileSync(bibfile_sparse.name, "}\n\n");
 		    }
 		}
-		// console.log(util.inspect(bibtex_sparse,true,null,true));
-
-		bibfile_sparse = tmp.fileSync({ prefix: 'bibtex-parser-tempfile-', postfix: '.bib' });
-		/*
-		fs.writeFileSync(bibfile_sparse.fd, "test", (err) => {
-		    if (err) throw err;
-		});
-		*/
-		var stream = fs.createWriteStream(bibfile_sparse.name);
-		stream.once('open', function(fd) {
-		    for (var bs in bibtex_sparse) {
-			if (bibtex_sparse.hasOwnProperty(bs)) {
-			    var t = bibtex_sparse[bs];
-			    // console.log("@" + t.entryType + "{" + t.KEY + ",");
-			    stream.write("@" + t.entryType + "{" + t.KEY + ",\n");
-			    for (var k in t) {
-				if (t.hasOwnProperty(k)) {
-				    // FIXME These should be moved into citations.meta.num or similar
-				    if (k.toUpperCase() != "NUM" &&
-					k.toUpperCase() != "USED" &&
-					k.toUpperCase() != "ENTRYTYPE" &&
-					k.toUpperCase() != "KEY"
-				       ) {
-					// console.log(k + ": {" + t[k] + "},");
-					stream.write(k + ": {" + t[k] + "},\n");
-				    }
-				}
-			    }
-			    // console.log("}");
-			    stream.write("}\n");
-			}
-		    }
-		    stream.end();
-		});
-
-
-		// var b2cj = b.b2cj(bibfile, lang, localesfile, cslfile);
-		var b2cj = b.b2cj(bibfile_sparse.name, lang, localesfile, cslfile);
-		// console.log(util.inspect(b2cj,true,null,true));
+		var b2cj_sparse = b.b2cj(bibfile_sparse.name, lang, localesfile, cslfile);
 
 		var ret = "";
-		// cslJson = (typeof b2cj[0] !== "undefined" && b2cj[0].csljson) ? b2cj[0].csljson : undefined;
-		ret = b2cj.bibliography[0].bibstart;
 
-		// console.log("====>>>>".yellow + ": " + util.inspect(refs,true,null,true))
+		// ret = b2cj.bibliography[0].bibstart;
+		ret = b2cj_sparse.bibliography[0].bibstart;
 
+		/*
 		b2cj.bibliography[1].forEach(function(entry) {
 		    ret += entry;
 		});
 		ret += b2cj.bibliography[0].bibend;
+		*/
+		b2cj_sparse.bibliography[1].forEach(function(entry) {
+		    ret += entry;
+		});
+		ret += b2cj_sparse.bibliography[0].bibend;
 		return ret;
 	    }
 	}
