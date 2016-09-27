@@ -441,12 +441,21 @@ module.exports = {
 		var cslJson, bibliography, bibfile, lang, localesfiles, cslfile, sparse;
 
 		// Read vars, use defaults if necessary
-		bibfile = block.args[0] ? block.args[0] : "./literature.bib";
-		lang = block.args[1] ? block.args[1] : "en-GB";
-		localesfile = block.args[2] ? block.args[2] : "./assets/csl/locales/locales-en-GB.xml";
-		cslfile = block.args[3] ? block.args[3] : "./assets/csl/styles/harvard-imperial-college-london.csl";
+		if (typeof block.args[0] === "undefined") { throw Error("Missing first  argument: bibfile"); }
+		if (typeof block.args[1] === "undefined") { throw Error("Missing second argument: lang specification"); }
+		if (typeof block.args[2] === "undefined") { throw Error("Missing third  argument: locales file"); }
+		if (typeof block.args[3] === "undefined") { throw Error("Missing fourth argument: CSL file"); }
+		
+		bibfile = block.args[0];
+		lang = block.args[1];
+		localesfile = block.args[2];
+		cslfile = block.args[3];
 		sparse = block.args[4] ? (block.args[4].toUpperCase() === "TRUE" ? true : false) : false;
 
+		// Check files exist and are readable:
+		try { fs.accessSync(bibfile, fs.F_OK); } catch(e) { throw e; }
+		try { fs.accessSync(localesfile, fs.F_OK); } catch(e) { throw e; }
+		try { fs.accessSync(cslfile, fs.F_OK); } catch(e) { throw e; }
 
 		// This would create a bibliography with everything from literature.bib
 		// Instead below let's create a "sparse" version instead.
