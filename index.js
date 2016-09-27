@@ -261,8 +261,8 @@ function trimCruft(s) {
 function findBibEntryByKey(key) {
     for (var e in bibtex) {
 
-        // console.log("...... ".magenta + "Testing " + key.toString.blue + " against " + e.toString.blue);
-
+        // console.log("...... ".magenta + "Testing " + key + " against " + e);
+	
         if (e.toUpperCase() === key.toUpperCase()) {
             return bibtex[e];
         }
