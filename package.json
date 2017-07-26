@@ -1,49 +1,51 @@
 {
-  "name": "gitbook-plugin-bibtex-citations-and-references",
-  "version": "0.8.2",
-  "description": "ALPHA TEST. Plugin for Gitbook that handles citations and references. Expects bibtex references in 'literature.bib'. Produces VERY BASIC Harvard-type inline references and bibliography. Can use CSL to generate other styles, although this is very much in testing and NOT TO BE RELIED UPON.",
-  "engines": {
-    "gitbook": ">=2.0.0"
-  },
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/austinjp/gitbook-plugin-bibtex-citations-and-references.git"
-  },
-  "keywords": [
-    "gitbook",
-    "bibtex",
-    "citations",
-    "references"
-  ],
-  "author": "austinjp",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/austinjp/gitbook-plugin-bibtex-citations-and-references/issues"
-  },
-  "homepage": "https://github.com/austinjp/gitbook-plugin-bibtex-citations-and-references#readme",
-  "dependencies": {
-    "bibtex-parser": "0.0.0",
-    "bibtex-to-csl-json": ">=0.0.12",
-    "citeproc-js-node-patch": ">=0.0.2",
-    "colors": "^1.1.2",
-    "tmp": ">=0.0.29"
-  },
-  "devDependencies": {
-    "bib2json": "0.0.1",
-    "bibtex-parse-js": "0.0.23",
-    "bibtex-parser": "0.0.0",
-    "bibtex-to-csl-json": ">=0.0.12",
-    "citeproc-js-node": "0.0.2",
-    "citeproc-js-node-patch": ">=0.0.2",
-    "colors": ">=1.1.2",
-    "glob": "^7.0.5",
-    "jsontoxml": "0.0.11",
-    "tmp": ">=0.0.29",
-    "xmljson": "^0.2.0",
-    "zotero-bibtex-parse": "0.0.13"
-  }
+    "name": "gitbook-plugin-bibtex-citations-and-references",
+    "version": "0.9.0",
+    "description": "ALPHA TEST. Plugin for Gitbook that handles citations and references. Expects bibtex references in 'literature.bib'. Produces VERY BASIC Harvard-type inline references and bibliography. Can use CSL to generate other styles, although this is very much in testing and NOT TO BE RELIED UPON.",
+    "engines": {
+	"gitbook": ">=2.0.0"
+    },
+    "main": "index.js",
+    "scripts": {
+	"test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+	"type": "git",
+	"url": "git+https://github.com/austinjp/gitbook-plugin-bibtex-citations-and-references.git"
+    },
+    "keywords": [
+	"gitbook",
+	"bibtex",
+	"citations",
+	"references"
+    ],
+    "author": "austinjp",
+    "license": "MIT",
+    "bugs": {
+	"url": "https://github.com/austinjp/gitbook-plugin-bibtex-citations-and-references/issues"
+    },
+    "homepage": "https://github.com/austinjp/gitbook-plugin-bibtex-citations-and-references#readme",
+    "dependencies": {
+	"bibtex-parser": "<=0.0.1",
+	"bibtex-to-csl-json": ">=0.0.12",
+	"citation-js": "=0.3.0-10",
+	"colors": "=1.1.2",
+	"proxyquire": "=1.8.0",
+	"tmp": "=0.0.31"
+    },
+    "devDependencies": {
+	"bib2json": "<=0.0.1",
+	"bibtex-parse-js": "0.0.23",
+	"bibtex-parser": "=0.0.1",
+	"bibtex-to-csl-json": ">=0.0.12",
+	"colors": "=1.1.2",
+	"citation-js": "=0.3.0-10",
+	"citeproc-js-node": "0.0.2",
+	"glob": "^7.0.5",
+	"jsontoxml": "0.0.11",
+	"proxyquire": "=1.8.0",
+	"tmp": "0.0.31",
+	"xmljson": "^0.2.0",
+	"zotero-bibtex-parse": "0.0.13"
+    }
 }
