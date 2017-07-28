@@ -1,7 +1,7 @@
 {
     "name": "gitbook-plugin-bibtex-citations-and-references",
-    "version": "0.9.0",
-    "description": "ALPHA TEST. Plugin for Gitbook that handles citations and references. Expects bibtex references in 'literature.bib'. Produces VERY BASIC Harvard-type inline references and bibliography. Can use CSL to generate other styles, although this is very much in testing and NOT TO BE RELIED UPON.",
+    "version": "0.9.1",
+    "description": "BETA TEST. Plugin for Gitbook that handles citations and references. Expects bibtex references in 'literature.bib'. Uses Citation Style Language stylesheets to generate references.",
     "engines": {
 	"gitbook": ">=2.0.0"
     },
@@ -26,26 +26,13 @@
     },
     "homepage": "https://github.com/austinjp/gitbook-plugin-bibtex-citations-and-references#readme",
     "dependencies": {
-	"bibtex-parser": "<=0.0.1",
-	"bibtex-to-csl-json": ">=0.0.12",
+	"bibtex-parse-js": "0.0.23",
 	"citation-js": "=0.3.0-10",
-	"colors": "=1.1.2",
-	"proxyquire": "=1.8.0",
-	"tmp": "=0.0.31"
+	"colors": "=1.1.2"
     },
     "devDependencies": {
-	"bib2json": "<=0.0.1",
 	"bibtex-parse-js": "0.0.23",
-	"bibtex-parser": "=0.0.1",
-	"bibtex-to-csl-json": ">=0.0.12",
-	"colors": "=1.1.2",
 	"citation-js": "=0.3.0-10",
-	"citeproc-js-node": "0.0.2",
-	"glob": "^7.0.5",
-	"jsontoxml": "0.0.11",
-	"proxyquire": "=1.8.0",
-	"tmp": "0.0.31",
-	"xmljson": "^0.2.0",
-	"zotero-bibtex-parse": "0.0.13"
+	"colors": "=1.1.2"
     }
 }
