@@ -6,21 +6,21 @@ module.exports = {
 	fs: "empty"
     },
 
-    entry: "src/index.js",
+    entry: "./src/index.js",
 
     output: {
 	path: __dirname + "/build/",
 	filename: "index.js"
     },
 
-    module: {
-	loaders: [
-	    {
-		test: /\.js$/,
-		include: /node_modules/,
-		loader: "babel-loader",
-		query: { presets: [ "es2015" ] }
-	    }
-	]
-    }
+//     module: {
+// 	loaders: [
+// 	    {
+// 		test: /\.js$/,
+// 		include: /node_modules/,
+// 		loader: "babel-loader",
+// 		query: { presets: [ "es2015" ] }
+// 	    }
+// 	]
+//     }
 }
