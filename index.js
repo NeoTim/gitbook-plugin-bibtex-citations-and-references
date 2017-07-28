@@ -1,29 +1,73 @@
-var Cite = require('./citation.js');
-var util = require('util');
-var colors = require('colors');
+// Strongly influenced by https://github.com/leandrocostasouza/gitbook-plugin-bibtex
+// Made possible by https://citation.js.org and https://github.com/fcheslack/citeproc-js-node
 
+let Cite = require('./citation.js');
+let util = require('util');
+let colors = require('colors');
 
-function myInit() {}
-function stub() { return '[citation]'; }
+let citeCount = 0;
+
+function myCite(key, yearBool, bracesBool, authorBool) {
+    if (key === undefined) { return undefined; }
+    let item = Cite.getItem(key);
+
+    let year = yearBool ? (item.entryTags.year ? item.entryTags.year : '') : '';
+    let leftBrace = bracesBool ? (yearBool ? '(' : '') : '';
+    let rightBrace = bracesBool ? (yearBool ? ')' : '') : '';
+
+    let author = Cite.formatAuthor(authorBool ? (item.entryTags.author ? item.entryTags.author : '') : '');
+    let ret = (author ? author + ' ' : '') + leftBrace + year + rightBrace;
+
+    ret = ret.replace(/^\s+/,'').replace(/\s+$/,'').replace(/\r|\n|\r\n/g,'');
+
+    if (ret === '') { return undefined; }
+
+    citeCount++;
+    return ret;
+}
 
 module.exports = {
     hooks: {
 	init: function() {
 	    console.log('Bibtex citations and references plugin...'.magenta);
-	    myInit;
+	    return;
 	},
 	finish: function() {
+	    String.prototype.lpad = function(padString, length) {
+		// Just some fancy string padding
+		let str = this;
+		while (str.length < length) {
+		    str = padString + str;
+		}
+		return str;
+	    }
+	    let refsCount = '' + Cite.getCountRefs();
+	    citeCount = citeCount.toString();
+	    let maxLen = (refsCount.length >= citeCount.length) ? refsCount.length : citeCount.length;
+
+	    console.log('  ' + refsCount.lpad(' ',maxLen) + ' <--'.blue.bold + ' Number of referencess parsed.');
+	    console.log('  ' + citeCount.lpad(' ',maxLen) + ' <--'.blue.bold + ' Number of citations generated.');
+	    console.log('  Imagine typing all those manually! Phew!');
 	    console.log('Finished generating bibtex citations and references.'.magenta);
+	    return;
 	}
     },
 
     filters: {
-	cite: function(key) { return stub(); },
-	citeNoBraces: function(key) { return stub(); },
-	citeNoYear: function(key) { return stub(); },
-	citeNoYearNoBraces: function(key) { return stub(); },
-	citeYearOnly: function(key) { return stub(); },
-	citeYearOnlyNoBraces: function(key) { return stub(); },
+	// "Author A, Author B (2001)" i.e. standard inline citation.
+	cite:                 function(key) { return myCite(key, true,  true,  true); },
+
+	// "Author A, Author B, 2001" e.g. "See: Auth 1 2001; Auth 2 and A N Other 2002"
+	citeNoBraces:         function(key) { return myCite(key, true,  false, true); },
+
+	// "Author A, Author B" e.g. "But Author later states..."
+	citeNoYear:           function(key) { return myCite(key, false, false, true); },
+
+	// "(2001)" e.g. "...described in option A (2001) or option B (2002)"
+	citeYearOnly:         function(key) { return myCite(key, true,  true,  false); },
+
+	// "2001" e.g. "...as discussed in their work of 2001."
+	citeYearOnlyNoBraces: function(key) { return myCite(key, true,  false, false); },
     },
 
     blocks: {
@@ -32,13 +76,13 @@ module.exports = {
 		if (typeof block === undefined) {
 		    throw Error('Function references expects one argument: block');
 		}
-		var r = Cite.refs;
-		return r;
+		return Cite.refs();
 	    }
 	},
 	refcsl: {
+	    // This is deprecated. Fails silently for now.
 	    process: function(block) {
-		return '[deprecated]';
+		return '';
 	    }
 	}
     }
