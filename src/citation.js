@@ -1,4 +1,6 @@
-import 'babel-polyfill';
+"use strict";
+
+// import 'babel-polyfill';
 
 let Cite = require('citation-js');
 let basicParse = require('bibtex-parse-js');

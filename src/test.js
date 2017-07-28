@@ -1,3 +1,5 @@
+"use strict";
+
 let i = require('.');
 let color = require('colors');
 

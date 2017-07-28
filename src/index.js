@@ -1,4 +1,6 @@
-import 'babel-polyfill';
+"use strict";
+
+// import 'babel-polyfill';
 
 // Strongly influenced by https://github.com/leandrocostasouza/gitbook-plugin-bibtex
 // Made possible by https://citation.js.org and https://github.com/fcheslack/citeproc-js-node
