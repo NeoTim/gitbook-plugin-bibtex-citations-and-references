@@ -1,3 +1,5 @@
+import 'babel-polyfill';
+
 let Cite = require('citation-js');
 let basicParse = require('bibtex-parse-js');
 let fs = require('fs');
@@ -20,7 +22,7 @@ const opts = {
     template: styleCSL
 };
 
-function myReadFile(n = undefined,t = undefined) {
+function myReadFile(n,t) {
     if (!n || !t) { throw 'Need filename and encoding type'; }
     try {
 	return fs.readFileSync(n,t);
@@ -39,24 +41,24 @@ function myInit() {
     // of cite.data[].author = [{ literal: <author-details> }]
     // citation-js only has a literal type for authors right now.
 
-    var count = 0;
-    var literal = { author: false };
+    let count = 0;
+    let literal = { author: false };
 
     checkAllItems:
-    for (var item in bibtexJSON) {
+    for (let item in bibtexJSON) {
 	if (! bibtexJSON.hasOwnProperty(item)) { continue checkAllItems; }
 
-	var bibstring = '@';
+	let bibstring = '@';
 	bibstring += bibtexJSON[item].entryType + '{';
 	bibstring += bibtexJSON[item].citationKey + ',' + "\n";
-	var entryTags = bibtexJSON[item].entryTags;
+	let entryTags = bibtexJSON[item].entryTags;
 
-	var year;
+	let year;
 
 	checkAllTags:
-	for (var key in entryTags) {
+	for (let key in entryTags) {
 	    if (! entryTags.hasOwnProperty(key)) { continue checkAllTags; }
-	    var val = entryTags[key];
+	    let val = entryTags[key];
 
 	    if (/^author$/i.test(key) && /^{/.test(val)) {
 		literal.author = val;
@@ -86,7 +88,7 @@ function myInit() {
 function refs() {
     myInit();
 
-    var injected = [];
+    let injected = [];
 
     opts.type = 'html';
 
@@ -100,12 +102,12 @@ function refs() {
     // FIXME This won't correctly handle multiple refs with same
     // author(s) and year. Should output "2015a", "2015b" etc..?
 
-    var raw = cite.get(opts).split(/\n|\r|\r\n/);
+    let raw = cite.get(opts).split(/\n|\r|\r\n/);
 
     trawlDivs:
     for (let r of raw) {
-	var regex = /<div data\-csl\-entry\-id="([^"]+)"/g;
-	var id = regex.exec(r);
+	let regex = /<div data\-csl\-entry\-id="([^"]+)"/g;
+	let id = regex.exec(r);
 	if (! id) { injected.push(r); continue trawlDivs; }
 	if (! id[1]) { injected.push(r); continue trawlDivs; }
 	id = id[1];
@@ -123,11 +125,11 @@ function refs() {
 	    //   Ahoy "hoy
 	    // So swap non-alphnums for \. (brutal)
 
-	    var year = b.entryTags.year ? b.entryTags.year : 'n.d.';
+	    let year = b.entryTags.year ? b.entryTags.year : 'n.d.';
 	    year = year.replace(/^{+/,'')
 		.replace(/}+$/,'');
 
-	    var title = b.entryTags.title;
+	    let title = b.entryTags.title;
 	    title = title
 		.replace(/^{+/,'')
 		.replace(/}+$/,'')
@@ -135,8 +137,8 @@ function refs() {
 		.replace(/\s/g,'\\s+');
 		// .toLowerCase();
 
-	    var re = new RegExp(title, "i");
-	    var originalTitle = re.exec(r);
+	    let re = new RegExp(title, "i");
+	    let originalTitle = re.exec(r);
 	    r = r.replace(re, '(' + year + '). ' + originalTitle);
 
 	    break findMatchingBibtexEntry;
@@ -145,7 +147,7 @@ function refs() {
     }
 
     return function() {
-	var ret = '';
+	let ret = '';
 	for (let i of injected) {
 	    if (i) {
 		ret += i + "\n";
@@ -166,10 +168,6 @@ function formatAuthor(author) {
     // FIXME Apply CSL
     author = author.replace(/^{+/,'').replace(/}+$/,'');
     return author;
-}
-
-function getCount() {
-    return ;
 }
     
 module.exports = {
