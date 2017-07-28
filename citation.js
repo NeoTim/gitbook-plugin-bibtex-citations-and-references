@@ -1,36 +1,45 @@
-var Cite = require('citation-js');
-var basicParse = require('bibtex-parse-js');
-var fs = require('fs');
-var util = require('util');
+let Cite = require('citation-js');
+let basicParse = require('bibtex-parse-js');
+let fs = require('fs');
+let util = require('util');
 
-var bibtex,
-    styleName,
-    styleCSL,
-    localeName,
-    localeXML,
-    cite,
-    opts,
-    bibtexJSON;
+const cite = new Cite();
+const styleName = 'apa-local'; // FIXME Pass as arg.
 
+// FIXME en-GB not supported by citation-js
+// see https://github.com/larsgw/citation.js/issues/40
+const localeName = 'en-US'; 
+
+const bibtex = myReadFile('literature.bib','utf8');
+const bibtexJSON = basicParse.toJSON(bibtex);
+const styleCSL = myReadFile('assets/csl/styles/' + styleName + '.csl','utf8');
+const localeXML = myReadFile('assets/csl/locales/locales-' + localeName + '.xml','utf8');
+const opts = {
+    type: 'string',
+    style: 'citation-' + styleName,
+    template: styleCSL
+};
+
+function myReadFile(n = undefined,t = undefined) {
+    if (!n || !t) { throw 'Need filename and encoding type'; }
+    try {
+	return fs.readFileSync(n,t);
+    } catch(e) { throw e; }
+}
 
 function myInit() {
-    styleName = 'apa-local';
-    localeName = 'en-US'; // FIXME en-GB not supported by citation-js
-    try { bibtex = fs.readFileSync('literature.bib','utf8'); } catch(e) { throw e; }
-    try { styleCSL = fs.readFileSync('assets/csl/styles/' + styleName + '.csl','utf8'); } catch(e) { throw e; }
-    try { localeXML = fs.readFileSync('assets/csl/locales/locales-' + localeName + '.xml','utf8'); } catch(e) { throw e; }
 
-    opts = {
-	type: 'string',
-	style: 'citation-' + styleName,
-	template: styleCSL
-    }
-
-    cite = new Cite();
-    bibtexJSON = basicParse.toJSON(bibtex);
+    // Note:
+    // Bibtex format allows use of {{ }} or "{ }" to indicate items
+    // that must not be decomposed, i.e. must be reproduced verbatim.
+    // Unfortunately citation-js does not seem to spot this currently.
+    // See https://github.com/larsgw/citation.js/issues/54
+    // bibtex-parse-js strips outer { } but leaves inner { }.
+    // So parse each item, use cite.add() to re-add them, taking advantage
+    // of cite.data[].author = [{ literal: <author-details> }]
+    // citation-js only has a literal type for authors right now.
 
     var count = 0;
-
     var literal = { author: false };
 
     checkAllItems:
@@ -48,14 +57,11 @@ function myInit() {
 	for (var key in entryTags) {
 	    if (! entryTags.hasOwnProperty(key)) { continue checkAllTags; }
 	    var val = entryTags[key];
-	    // FIXME Figure out a way to prevent citation-js from diddling with other fields, if necessary.
-	    // bibtex-parse-js strips outer { } but leaves inner { }
-	    // citation-js removes all { } surrounding items
-	    // Citation-js only has a literal type for authors right now.
+
 	    if (/^author$/i.test(key) && /^{/.test(val)) {
-		val = val.replace(/^{+/,'');
-		val = val.replace(/}+$/,'');
 		literal.author = val;
+                literal.author = literal.author.replace(/^{+/,'');
+		literal.author = literal.author.replace(/}+$/,'');
 	    }
             bibstring += '  ' + key + ' = {' + val + "},\n";
 	    if (key == 'year') { year = val; }
@@ -74,7 +80,6 @@ function myInit() {
 	}
 
 	count++;
-
     }
 }
 
@@ -86,9 +91,14 @@ function refs() {
     opts.type = 'html';
 
     // FIXME
+    // Workaround for bug in citation-js which destroys date information.
+    // See https://github.com/larsgw/citation.js/issues/53
     // Don't look, it gets brutal below here.... :(
-    // citation-js appears to have a bug which destroys date information.
-    // Use regexes to inject date.
+    // Use regexes to inject date. COuld probably do this far more
+    // nicely, perhaps using proxyquire.
+
+    // FIXME This won't correctly handle multiple refs with same
+    // author(s) and year. Should output "2015a", "2015b" etc..?
 
     var raw = cite.get(opts).split(/\n|\r|\r\n/);
 
@@ -100,30 +110,35 @@ function refs() {
 	if (! id[1]) { injected.push(r); continue trawlDivs; }
 	id = id[1];
 
+	// FIXME Replace with bibtexJSON.find(x => x.id == id)
+	
 	findMatchingBibtexEntry:
 	for (let b of bibtexJSON) {
 	    if (b.citationKey !== id) { continue findMatchingBibtexEntry; }
 
-	    // Ugh. Some chars may have been changed, for example ' -> "
-	    // Yet the following two strings have to match:
+	    // Cannot use simple string matching since some chars may have been changed,
+	    // for example ' -> " or `` etc.
+	    // The following two strings have to match:
 	    //   Ahoy 'hoy
 	    //   Ahoy "hoy
+	    // So swap non-alphnums for \. (brutal)
 
 	    var year = b.entryTags.year ? b.entryTags.year : 'n.d.';
 	    year = year.replace(/^{+/,'')
 		.replace(/}+$/,'');
-	    
+
 	    var title = b.entryTags.title;
-	    title = title.replace(/^{+/,'')
+	    title = title
+		.replace(/^{+/,'')
 		.replace(/}+$/,'')
 		.replace(/[^A-Za-z0-9\s]/g,'.')
-		.replace(/\s/g,'\\s+')
-		.toLowerCase();
+		.replace(/\s/g,'\\s+');
+		// .toLowerCase();
 
 	    var re = new RegExp(title, "i");
-	    var original = re.exec(r);
-	    r = r.replace(re, '(' + year + '). ' + original);
-	    
+	    var originalTitle = re.exec(r);
+	    r = r.replace(re, '(' + year + '). ' + originalTitle);
+
 	    break findMatchingBibtexEntry;
 	}
 	injected.push(r);
@@ -140,6 +155,26 @@ function refs() {
     }();
 }
 
+
+function getItem(key) {
+    if (key === undefined ) { return undefined; }
+    let ret = bibtexJSON.find(x => x.citationKey.toLowerCase() === key.toLowerCase());
+    return ret;
+}
+
+function formatAuthor(author) {
+    // FIXME Apply CSL
+    author = author.replace(/^{+/,'').replace(/}+$/,'');
+    return author;
+}
+
+function getCount() {
+    return ;
+}
+    
 module.exports = {
-    refs: refs()
+    refs: refs,
+    getItem: function(key) { return getItem(key) },
+    formatAuthor: function(author) { return formatAuthor(author) },
+    getCountRefs: function() { return bibtexJSON.length }
 }
