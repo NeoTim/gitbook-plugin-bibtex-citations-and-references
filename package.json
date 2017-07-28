@@ -8,7 +8,7 @@
   "main": "build/index.js",
   "scripts": {
     "prebuild": "rm -f build/index.js && ln -srf src/assets build/ && ln -srf src/literature.bib build/",
-    "build": "webpack --progress --colors"
+    "build": "babel src --out-dir build"
   },
   "repository": {
     "type": "git",
