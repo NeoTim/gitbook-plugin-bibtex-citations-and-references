@@ -1,3 +1,5 @@
+'use strict';
+
 // Strongly influenced by https://github.com/leandrocostasouza/gitbook-plugin-bibtex
 // Made possible by https://citation.js.org and https://github.com/fcheslack/citeproc-js-node
 
@@ -33,20 +35,20 @@ module.exports = {
 	    return;
 	},
 	finish: function() {
-	    String.prototype.lpad = function(padString, length) {
+	    String.prototype.rpad = function(padString, length) {
 		// Just some fancy string padding
 		let str = this;
 		while (str.length < length) {
-		    str = padString + str;
+		    str = str + padString;
 		}
 		return str;
 	    }
-	    let refsCount = '' + Cite.getCountRefs();
+	    let refsCount = Cite.getCountRefs().toString();
 	    citeCount = citeCount.toString();
 	    let maxLen = (refsCount.length >= citeCount.length) ? refsCount.length : citeCount.length;
 
-	    console.log('  ' + refsCount.lpad(' ',maxLen) + ' <--'.blue.bold + ' Number of referencess parsed.');
-	    console.log('  ' + citeCount.lpad(' ',maxLen) + ' <--'.blue.bold + ' Number of citations generated.');
+	    console.log('  ' + refsCount.rpad(' ',maxLen) + ' <--'.blue.bold + ' Number of references parsed.');
+	    console.log('  ' + citeCount.rpad(' ',maxLen) + ' <--'.blue.bold + ' Number of citations generated.');
 	    console.log('  Imagine typing all those manually! Phew!');
 	    console.log('Finished generating bibtex citations and references.'.magenta);
 	    return;
