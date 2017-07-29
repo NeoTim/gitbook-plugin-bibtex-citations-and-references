@@ -1,5 +1,7 @@
 "use strict";
 
+require('babel-register');
+
 // import 'babel-polyfill';
 
 // Strongly influenced by https://github.com/leandrocostasouza/gitbook-plugin-bibtex

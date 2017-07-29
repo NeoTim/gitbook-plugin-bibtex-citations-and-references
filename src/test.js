@@ -1,5 +1,7 @@
 "use strict";
 
+require('babel-register');
+
 let i = require('.');
 let color = require('colors');
 
