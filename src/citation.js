@@ -1,5 +1,7 @@
 "use strict";
 
+require('babel-register');
+
 // import 'babel-polyfill';
 
 let Cite = require('citation-js');
@@ -14,10 +16,10 @@ const styleName = 'apa-local'; // FIXME Pass as arg.
 // see https://github.com/larsgw/citation.js/issues/40
 const localeName = 'en-US'; 
 
-const bibtex = myReadFile('literature.bib','utf8');
+const bibtex = myReadFile(__dirname + '/literature.bib','utf8');
 const bibtexJSON = basicParse.toJSON(bibtex);
-const styleCSL = myReadFile('assets/csl/styles/' + styleName + '.csl','utf8');
-const localeXML = myReadFile('assets/csl/locales/locales-' + localeName + '.xml','utf8');
+const styleCSL = myReadFile(__dirname + '/assets/csl/styles/' + styleName + '.csl','utf8');
+const localeXML = myReadFile(__dirname + '/assets/csl/locales/locales-' + localeName + '.xml','utf8');
 const opts = {
     type: 'string',
     style: 'citation-' + styleName,
