@@ -69,26 +69,31 @@ module.exports = {
     filters: {
 	// "Author A, Author B (2001)" i.e. standard inline citation.
 	cite: function cite(key) {
+            if (key == undefined) { return undef; }
 	    return myCite(key, true, true, true);
 	},
 
 	// "Author A, Author B, 2001" e.g. "See: Auth 1 2001; Auth 2 and A N Other 2002"
 	citeNoBraces: function citeNoBraces(key) {
+            if (key == undefined) { return undef; }
 	    return myCite(key, true, false, true);
 	},
 
 	// "Author A, Author B" e.g. "But Author later states..."
 	citeNoYear: function citeNoYear(key) {
+            if (key == undefined) { return undef; }
 	    return myCite(key, false, false, true);
 	},
 
 	// "(2001)" e.g. "...described in option A (2001) or option B (2002)"
 	citeYearOnly: function citeYearOnly(key) {
+            if (key == undefined) { return undef; }
 	    return myCite(key, true, true, false);
 	},
 
 	// "2001" e.g. "...as discussed in their work of 2001."
 	citeYearOnlyNoBraces: function citeYearOnlyNoBraces(key) {
+            if (key == undefined) { return undef; }
 	    return myCite(key, true, false, false);
 	}
     },
