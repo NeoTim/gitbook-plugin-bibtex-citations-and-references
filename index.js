@@ -110,7 +110,7 @@ module.exports = {
     blocks: {
 	references: {
 	    process: function process(block) {
-		if ((typeof block === 'undefined' ? 'undefined' : babelHelpers.typeof(block)) === undefined) {
+		if (typeof block === undefined) {
 		    throw Error('Function references expects one argument: block');
 		}
 		return Cite.refs();
