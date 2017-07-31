@@ -1,11 +1,11 @@
 {
   "name": "gitbook-plugin-bibtex-citations-and-references",
-  "version": "0.9.4",
+  "version": "0.9.5",
   "description": "BETA TEST. Plugin for Gitbook that handles citations and references. Expects bibtex references in 'literature.bib'. Uses Citation Style Language stylesheets to generate references.",
   "engines": {
     "gitbook": ">=2.0.0"
   },
-  "main": "build/index.js",
+  "main": "index.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/austinjp/gitbook-plugin-bibtex-citations-and-references.git"
@@ -26,26 +26,12 @@
     "bibtex-parse-js": "0.0.23",
     "citeproc": "^2.0.6",
     "citation-js": "=0.3.0-10",
-    "colors": "=1.1.2",
-    "node-strict": "=1.0.1"
+    "colors": "=1.1.2"
   },
   "devDependencies": {
-    "babel-cli": "^6.24.1",
-    "babel-loader": "^7.1.1",
-    "babel-plugin-external-helpers": "^6.22.0",
-    "babel-polyfill": "^6.23.0",
-    "babel-preset-env": "^1.6.0",
-    "babel-preset-es2015": "^6.24.1",
-    "babel-preset-latest": "^6.24.1",
     "bibtex-parse-js": "0.0.23",
-    "citation-js": "=0.3.0-10",
     "citeproc": "^2.0.6",
-    "colors": "=1.1.2",
-    "node-strict": "=1.0.1",
-    "rollup": "^0.45.2",
-    "rollup-plugin-babel": "^2.7.1",
-    "rollup-plugin-commonjs": "^8.0.2",
-    "rollup-plugin-node-resolve": "^3.0.0",
-    "webpack": "^3.4.1"
+    "citation-js": "=0.3.0-10",
+    "colors": "=1.1.2"
   }
 }
