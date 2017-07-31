@@ -19,13 +19,22 @@ function myCite(key, yearBool, bracesBool, authorBool) {
     }
     let item = Cite.getItem(key);
 
-    if (! item.entryTags || ! item) { return undefined; }
+    if ( (item === undefined) ||
+         (item.entryTags === undefined)) { return ''; }
 
-    let year = yearBool ? item.entryTags.year ? item.entryTags.year : '' : '';
     let leftBrace = bracesBool ? yearBool ? '(' : '' : '';
     let rightBrace = bracesBool ? yearBool ? ')' : '' : '';
 
-    let author = Cite.formatAuthor(authorBool ? item.entryTags.author ? item.entryTags.author : '' : '');
+    let year = '';
+    if (item.entryTags.year !== undefined) {
+        year = yearBool ? item.entryTags.year : '';
+    }
+
+    let author = '';
+    if (item.entryTags.author !== undefined) {
+        author = Cite.formatAuthor(authorBool ? item.entryTags.author : '');
+    }
+
     let ret = (author ? author + ' ' : '') + leftBrace + year + rightBrace;
 
     ret = ret.replace(/^\s+/, '').replace(/\s+$/, '').replace(/\r|\n|\r\n/g, '');
