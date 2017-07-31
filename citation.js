@@ -1,6 +1,6 @@
-"use strict";
+// "use strict";
 
-require('babel-register');
+// require('babel-register');
 
 // import 'babel-polyfill';
 
@@ -56,6 +56,8 @@ function myInit() {
 	bibstring += bibtexJSON[item].entryType + '{';
 	bibstring += bibtexJSON[item].citationKey + ',' + "\n";
 	let entryTags = bibtexJSON[item].entryTags;
+
+        if (! entryTags) { continue checkAllItems; }
 
 	let year;
 
