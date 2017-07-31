@@ -1,15 +1,11 @@
-// "use strict";
-
-// require('babel-register');
-
-// import 'babel-polyfill';
-
 // Strongly influenced by https://github.com/leandrocostasouza/gitbook-plugin-bibtex
 // Made possible by https://citation.js.org and https://github.com/fcheslack/citeproc-js-node
 
-let Cite = require('./citation.js');
 let util = require('util');
 let colors = require('colors');
+let fs = require('fs');
+let Cite = require('./citation.js');
+Cite.init(fs.readFileSync('literature.bib', 'utf8'));
 
 let citeCount = 0;
 
@@ -50,6 +46,7 @@ function myCite(key, yearBool, bracesBool, authorBool) {
 module.exports = {
     hooks: {
 	init: function init() {
+            // Cite.init(fs.readFileSync('literature.bib', 'utf8'));
 	    console.log('Bibtex citations and references plugin...'.magenta);
             console.log('  Running in environment version ' + process.version);
 	    return;
@@ -67,8 +64,8 @@ module.exports = {
 	    citeCount = citeCount.toString();
 	    let maxLen = refsCount.length >= citeCount.length ? refsCount.length : citeCount.length;
 
-	    console.log('  ' + refsCount.rpad(' ', maxLen) + ' <--'.blue.bold + ' Number of references parsed.');
-	    console.log('  ' + citeCount.rpad(' ', maxLen) + ' <--'.blue.bold + ' Number of citations generated.');
+	    console.log('  ' + refsCount.rpad(' ', maxLen) + ' <--'.cyan + ' Number of references parsed.');
+	    console.log('  ' + citeCount.rpad(' ', maxLen) + ' <--'.cyan + ' Number of citations generated.');
 	    console.log('  Imagine typing all those manually! Phew!');
 	    console.log('Finished generating bibtex citations and references.'.magenta);
 	    return;

@@ -1,13 +1,7 @@
-// "use strict";
-
-// require('babel-register');
-
-// import 'babel-polyfill';
-
 let Cite = require('citation-js');
 let basicParse = require('bibtex-parse-js');
 let fs = require('fs');
-let util = require('util');
+let bibtexJSON;
 
 const cite = new Cite();
 const styleName = 'apa-local'; // FIXME Pass as arg.
@@ -16,8 +10,6 @@ const styleName = 'apa-local'; // FIXME Pass as arg.
 // see https://github.com/larsgw/citation.js/issues/40
 const localeName = 'en-US'; 
 
-const bibtex = myReadFile(__dirname + '/literature.bib','utf8');
-const bibtexJSON = basicParse.toJSON(bibtex);
 const styleCSL = myReadFile(__dirname + '/assets/csl/styles/' + styleName + '.csl','utf8');
 const localeXML = myReadFile(__dirname + '/assets/csl/locales/locales-' + localeName + '.xml','utf8');
 const opts = {
@@ -33,7 +25,9 @@ function myReadFile(n,t) {
     } catch(e) { throw e; }
 }
 
-function myInit() {
+function myInit(bibdata) {
+
+    bibtexJSON = basicParse.toJSON(bibdata);
 
     // Note:
     // Bibtex format allows use of {{ }} or "{ }" to indicate items
@@ -175,10 +169,15 @@ function formatAuthor(author) {
     author = author.replace(/^{+/,'').replace(/}+$/,'');
     return author;
 }
-    
+
 module.exports = {
     refs: refs,
     getItem: function(key) { return getItem(key) },
     formatAuthor: function(author) { return formatAuthor(author) },
     getCountRefs: function() { return bibtexJSON.length }
+}
+
+module.exports.init = function(bibdata) {
+    myInit(bibdata);
+    return true;
 }
