@@ -1,15 +1,11 @@
 {
   "name": "gitbook-plugin-bibtex-citations-and-references",
-  "version": "0.9.2",
+  "version": "0.9.3",
   "description": "BETA TEST. Plugin for Gitbook that handles citations and references. Expects bibtex references in 'literature.bib'. Uses Citation Style Language stylesheets to generate references.",
   "engines": {
     "gitbook": ">=2.0.0"
   },
   "main": "build/index.js",
-  "scripts": {
-    "prebuild": "rm -f build/index.js && ln -srf src/assets build/ && ln -srf src/literature.bib build/",
-    "build": "rollup -c # babel src --out-dir build"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/austinjp/gitbook-plugin-bibtex-citations-and-references.git"
