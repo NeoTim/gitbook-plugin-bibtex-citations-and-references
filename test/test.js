@@ -1,8 +1,4 @@
-// "use strict";
-
-// require('babel-register');
-
-let i = require('.');
+let i = require('..');
 let color = require('colors');
 
 let id = 'Glasziou2005';
