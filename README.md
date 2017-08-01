@@ -21,7 +21,13 @@ In your `book.json` file in your Gitbook repo, add this as a plugin:
 }
 ```
 
-Create or edit `literature.bib` in the root of your Gitbook repository. Here's an example:
+Tell Gitbook to install this and any other plugins:
+
+```
+gitbook install
+```
+
+Create or edit `literature.bib` in the root of your Gitbook repository. It needs to be valid bibtex. Here's an example:
 
 ```bibtex
 @article{Wallace2013,
@@ -86,6 +92,7 @@ The above bibtex example will produce the following references:
 > 
 > Wallace, J. (2013). Lost in translation: transferring knowledge from research to clinical practice. *BJPsych Advances*, 19(4), 250–258. https://doi.org/10.1192/apt.bp.112.010389
 
+Obviously, you need to `gitbook build` to see the output.
 
 ## Thanks
 
