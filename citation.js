@@ -1,5 +1,12 @@
-let Cite = require('citation-js'); // This gets added to, so not a const
+let Cite = require('citation-js');
 let bibtexJSON;
+
+// Number before "et al" in inline citations.
+// More than this results in "Author A et al"
+// Fewer results in "Author A, Author B and Author C"
+// or "Author A and Author B" or "Author A".
+// FIXME should be an arg/preference
+const etAl = 3;
 
 const basicParse = require('bibtex-parse-js');
 const util = require('util');
@@ -19,7 +26,7 @@ let opts = {
     type: 'string',
     style: 'citation-' + styleName,
     template: styleCSL
-}; // Gets added to, so not really const!
+};
 
 function myReadFile(n,t) {
     if (!n || !t) { throw 'Need filename and encoding type'; }
@@ -104,8 +111,42 @@ function getItem(key) {
 
 function formatAuthor(author) {
     // FIXME Apply CSL
+    if (/^{+/.test(author)) {
+        author = author.replace(/^{+/,'').replace(/}+$/,'');
+        return author;
+    }
     author = author.replace(/^{+/,'').replace(/}+$/,'');
-    return author;
+    if (! / and /i.test(author)) { return author; }
+    let ret = [];
+    let auths = author.split(/ and /i);
+    if (auths.length > etAl) {
+        return formatNameToInline(auths[0]) + ' et al';
+    }
+
+//     auths.forEach((a) => {
+//         ret.push(formatNameToInline(a))
+//     });
+    ret = auths.slice(0,etAl);
+
+    var retString = formatNameToInline(ret.shift());
+    if (ret.length > 0) {
+        retString = formatNameToInline(ret.pop()) + ' and ' + retString;
+        while ((a = ret.pop()) !== undefined) {
+            retString = formatNameToInline(a) + ', ' + retString;
+        }
+    }
+    return retString;
+}
+
+function formatNameToInline(name) {
+    let alreadyReversed = false;
+    if (/,/.test(name)) { alreadyReversed = true; }
+    name.replace(',','');
+    let names = name.split(/\s+/);
+    if (alreadyReversed) {
+        return names[0]; // + ' ' + names[names.length - 1].charAt(0);
+    }
+    return names[names.length -1]; // + ' ' + names[0].charAt(0);
 }
 
 module.exports = {
