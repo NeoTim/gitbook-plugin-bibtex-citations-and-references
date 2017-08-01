@@ -2,7 +2,7 @@
 
 ## Description
 
-Plugin for Gitbook that handles citations and references. Beta quality, still some missing functionality. Expects bibtex references in 'literature.bib'. Uses Citation Style Language stylesheets to generate references courtesy of (citation-js)[https://github.com/citation-js/].
+Plugin for Gitbook that handles citations and references. Beta quality, still some missing functionality. Expects bibtex references in 'literature.bib'. Uses Citation Style Language stylesheets to generate references courtesy of https://github.com/larsgw/citation.js
 
 ## WARNING
 
