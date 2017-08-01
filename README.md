@@ -21,7 +21,7 @@ In your `book.json` file in your Gitbook repo, add this as a plugin:
 }
 ```
 
-Make Gitbook install plugins:
+Tell Gitbook to install this and any other plugins:
 
 ```
 gitbook install
