@@ -14,11 +14,12 @@ const localeName = 'en-US';
 
 const styleCSL = myReadFile(__dirname + '/assets/csl/styles/' + styleName + '.csl','utf8');
 const localeXML = myReadFile(__dirname + '/assets/csl/locales/locales-' + localeName + '.xml','utf8');
-const opts = {
+
+let opts = {
     type: 'string',
     style: 'citation-' + styleName,
     template: styleCSL
-};
+}; // Gets added to, so not really const!
 
 function myReadFile(n,t) {
     if (!n || !t) { throw 'Need filename and encoding type'; }
@@ -92,76 +93,8 @@ function myInit() {
 function refs() {
     myInit();
     opts.type = 'html';
-    // console.log(cite.get(opts));
-    // return cite.get(opts);
-
-    // FIXME -- NO LONGER REQUIRED SINCE citation-js v0.3.0-11
-    // Workaround for bug in citation-js which destroys date information.
-    // See https://github.com/larsgw/citation.js/issues/53
-    // Don't look, it gets brutal below here.... :(
-    // Use regexes to inject date. COuld probably do this far more
-    // nicely, perhaps using proxyquire.
-
-    // FIXME This won't correctly handle multiple refs with same
-    // author(s) and year. Should output "2015a", "2015b" etc..?
-
-    let raw = cite.get(opts).split(/\n|\r|\r\n/);
-
-    let injected = [];
-
-    trawlDivs:
-    for (let r of raw) {
-	let regex = /<div data\-csl\-entry\-id="([^"]+)"/g;
-	let id = regex.exec(r);
-	if (! id) { injected.push(r); continue trawlDivs; }
-	if (! id[1]) { injected.push(r); continue trawlDivs; }
-	id = id[1];
-
-	// FIXME Replace with bibtexJSON.find(x => x.id == id)
-	
-	findMatchingBibtexEntry:
-	for (let b of bibtexJSON) {
-	    if (b.citationKey !== id) { continue findMatchingBibtexEntry; }
-
-	    // Cannot use simple string matching since some chars may have been changed,
-	    // for example ' -> " or `` etc.
-	    // The following two strings have to match:
-	    //   Ahoy 'hoy
-	    //   Ahoy "hoy
-	    // So swap non-alphnums for \. (brutal)
-
-	    let year = b.entryTags.year ? b.entryTags.year : 'n.d.';
-	    year = year.replace(/^{+/,'')
-		.replace(/}+$/,'');
-
-	    let title = b.entryTags.title;
-	    title = title
-		.replace(/^{+/,'')
-		.replace(/}+$/,'')
-		.replace(/[^A-Za-z0-9\s]/g,'.')
-		.replace(/\s/g,'\\s+');
-		// .toLowerCase();
-
-	    let re = new RegExp(title, "i");
-	    let originalTitle = re.exec(r);
-	    r = r.replace(re, '(' + year + '). ' + originalTitle);
-
-	    break findMatchingBibtexEntry;
-	}
-	injected.push(r);
-    }
-
-    return function() {
-	let ret = '';
-	for (let i of injected) {
-	    if (i) {
-		ret += i + "\n";
-	    }
-	}
-	return ret;
-    }();
+    return cite.get(opts);
 }
-
 
 function getItem(key) {
     if (key === undefined ) { return undefined; }
