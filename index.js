@@ -27,7 +27,7 @@ function myCite(key, yearBool, bracesBool, authorBool) {
 
     let author;
     if (item.entryTags.author !== undefined) {
-        author = citer.formatAuthor(authorBool ? item.entryTags.author : '');
+        author = authorBool ? citer.formatAuthor(item.entryTags.author) : undefined;
     }
 
     let ret = (author ? author + ' ' : '') + leftBrace + year + rightBrace;
