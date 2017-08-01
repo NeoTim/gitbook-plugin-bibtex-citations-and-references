@@ -21,6 +21,12 @@ In your `book.json` file in your Gitbook repo, add this as a plugin:
 }
 ```
 
+Make Gitbook install plugins:
+
+```
+gitbook install
+```
+
 Create or edit `literature.bib` in the root of your Gitbook repository. Here's an example:
 
 ```bibtex
@@ -86,6 +92,7 @@ The above bibtex example will produce the following references:
 > 
 > Wallace, J. (2013). Lost in translation: transferring knowledge from research to clinical practice. *BJPsych Advances*, 19(4), 250–258. https://doi.org/10.1192/apt.bp.112.010389
 
+Obviously, you need to `gitbook build` to see the output.
 
 ## Thanks
 
