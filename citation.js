@@ -116,7 +116,8 @@ function formatAuthor(author) {
         return author;
     }
     author = author.replace(/^{+/,'').replace(/}+$/,'');
-    if (! / and /i.test(author)) { return author; }
+
+    if (! / and /i.test(author)) { return formatNameToInline(author); }
     let ret = [];
     let auths = author.split(/ and /i);
     if (auths.length > etAl) {
