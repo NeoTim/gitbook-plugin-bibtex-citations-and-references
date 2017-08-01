@@ -47,10 +47,10 @@ module.exports = {
 	init: function() {
             citer.init();
 	    console.log('Bibtex citations and references plugin...'.magenta);
-            console.log('  Running in environment version ' + process.version);
+            console.log('  Running in Node version ' + process.version + ' -- must be at least v6');
 	    return;
 	},
-	finish: function finish() {
+	finish: function() {
 	    String.prototype.rpad = function (padString, length) {
 		// Just some fancy string padding
 		let str = this;
@@ -73,19 +73,19 @@ module.exports = {
 
     filters: {
 	// "Author A, Author B (2001)" i.e. standard inline citation.
-	cite: function cite(key) {
+	cite: function(key) {
             if (key == undefined) { return undef; }
 	    return myCite(key, true, true, true);
 	},
 
 	// "Author A, Author B, 2001" e.g. "See: Auth 1 2001; Auth 2 and A N Other 2002"
-	citeNoBraces: function citeNoBraces(key) {
+	citeNoBraces: function(key) {
             if (key == undefined) { return undef; }
 	    return myCite(key, true, false, true);
 	},
 
 	// "Author A, Author B" e.g. "But Author later states..."
-	citeNoYear: function citeNoYear(key) {
+	citeNoYear: function(key) {
             if (key == undefined) { return undef; }
 	    return myCite(key, false, false, true);
 	},
@@ -97,7 +97,7 @@ module.exports = {
 	},
 
 	// "2001" e.g. "...as discussed in their work of 2001."
-	citeYearOnlyNoBraces: function citeYearOnlyNoBraces(key) {
+	citeYearOnlyNoBraces: function(key) {
             if (key == undefined) { return undef; }
 	    return myCite(key, true, false, false);
 	}
@@ -105,7 +105,7 @@ module.exports = {
 
     blocks: {
 	references: {
-	    process: function process(block) {
+	    process: function(block) {
 		if (typeof block === undefined) {
 		    throw Error('Function references expects one argument: block');
 		}
@@ -114,7 +114,8 @@ module.exports = {
 	},
 	refcsl: {
 	    // This is deprecated. Fails silently for now.
-	    process: function process(block) {
+	    process: function(block) {
+                console.error("  Block function 'refcsl' is deprecated, please use 'references' instead.".red);
 		return '';
 	    }
 	}
