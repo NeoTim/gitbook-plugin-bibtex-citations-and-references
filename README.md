@@ -27,7 +27,7 @@ Tell Gitbook to install this and any other plugins:
 gitbook install
 ```
 
-Create or edit `literature.bib` in the root of your Gitbook repository. Here's an example:
+Create or edit `literature.bib` in the root of your Gitbook repository. It needs to be valid bibtex. Here's an example:
 
 ```bibtex
 @article{Wallace2013,
