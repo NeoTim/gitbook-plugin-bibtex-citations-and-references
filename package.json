@@ -1,6 +1,6 @@
 {
   "name": "gitbook-plugin-bibtex-citations-and-references",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "description": "Beta quality, still some bugs. Plugin for Gitbook that handles citations and references. Expects bibtex references in 'literature.bib'. Uses Citation Style Language stylesheets to generate references. NOTE: this WILL NOT WORK on Gitbook's cloud servers since they continue to use Node v5, and modules required by this plugin require Node v6 or above. TODO: Author names should use CSL; currently a 'sensible' hard-coded format is produced e.g. 'Author A, Author B and Author C' or if more than 3 authors 'Author A et al'.",
   "engines": {
     "gitbook": ">=2.0.0"
