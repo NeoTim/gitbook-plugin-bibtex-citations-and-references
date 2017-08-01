@@ -1,7 +1,7 @@
 {
   "name": "gitbook-plugin-bibtex-citations-and-references",
-  "version": "0.9.7",
-  "description": "BETA TEST. Plugin for Gitbook that handles citations and references. Expects bibtex references in 'literature.bib'. Uses Citation Style Language stylesheets to generate references.",
+  "version": "0.9.8",
+  "description": "Plugin for Gitbook that handles citations and references. Expects bibtex references in 'literature.bib'. Uses Citation Style Language stylesheets to generate references. NOTE: this WILL NOT WORK on Gitbook's cloud servers since they continue to use Node v5, and modules required by this plugin require Node v6 or above.",
   "engines": {
     "gitbook": ">=2.0.0"
   },
@@ -23,15 +23,15 @@
   },
   "homepage": "https://github.com/austinjp/gitbook-plugin-bibtex-citations-and-references#readme",
   "dependencies": {
-    "bibtex-parse-js": "0.0.23",
+    "bibtex-parse-js": "=0.0.23",
     "citeproc": "^2.0.6",
-    "citation-js": "=0.3.0-10",
+    "citation-js": "^0.3.0-11",
     "colors": "=1.1.2"
   },
   "devDependencies": {
-    "bibtex-parse-js": "0.0.23",
+    "bibtex-parse-js": "=0.0.23",
     "citeproc": "^2.0.6",
-    "citation-js": "=0.3.0-10",
+    "citation-js": "^0.3.0-11",
     "colors": "=1.1.2"
   }
 }

@@ -1,8 +1,10 @@
-let Cite = require('citation-js');
-let basicParse = require('bibtex-parse-js');
-let fs = require('fs');
+let Cite = require('citation-js'); // This gets added to, so not a const
 let bibtexJSON;
 
+const basicParse = require('bibtex-parse-js');
+const util = require('util');
+const fs = require('fs');
+const path = require('path');
 const cite = new Cite();
 const styleName = 'apa-local'; // FIXME Pass as arg.
 
@@ -25,9 +27,11 @@ function myReadFile(n,t) {
     } catch(e) { throw e; }
 }
 
-function myInit(bibdata) {
+function myInit() {
 
-    bibtexJSON = basicParse.toJSON(bibdata);
+    // FIXME Is it really necessary to use global.process.env.PWD here?
+    let bibtex = myReadFile(path.join(global.process.env.PWD, 'literature.bib'),'utf8');
+    bibtexJSON = basicParse.toJSON(bibtex);
 
     // Note:
     // Bibtex format allows use of {{ }} or "{ }" to indicate items
@@ -87,12 +91,11 @@ function myInit(bibdata) {
 
 function refs() {
     myInit();
-
-    let injected = [];
-
     opts.type = 'html';
+    // console.log(cite.get(opts));
+    // return cite.get(opts);
 
-    // FIXME
+    // FIXME -- NO LONGER REQUIRED SINCE citation-js v0.3.0-11
     // Workaround for bug in citation-js which destroys date information.
     // See https://github.com/larsgw/citation.js/issues/53
     // Don't look, it gets brutal below here.... :(
@@ -103,6 +106,8 @@ function refs() {
     // author(s) and year. Should output "2015a", "2015b" etc..?
 
     let raw = cite.get(opts).split(/\n|\r|\r\n/);
+
+    let injected = [];
 
     trawlDivs:
     for (let r of raw) {
@@ -172,12 +177,8 @@ function formatAuthor(author) {
 
 module.exports = {
     refs: refs,
+    init: function() { myInit(); return true; },
     getItem: function(key) { return getItem(key) },
     formatAuthor: function(author) { return formatAuthor(author) },
     getCountRefs: function() { return bibtexJSON.length }
-}
-
-module.exports.init = function(bibdata) {
-    myInit(bibdata);
-    return true;
 }

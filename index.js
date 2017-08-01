@@ -1,11 +1,10 @@
 // Strongly influenced by https://github.com/leandrocostasouza/gitbook-plugin-bibtex
 // Made possible by https://citation.js.org and https://github.com/fcheslack/citeproc-js-node
 
-let util = require('util');
-let colors = require('colors');
-let fs = require('fs');
-let Cite = require('./citation.js');
-Cite.init(fs.readFileSync('literature.bib', 'utf8'));
+const util = require('util');
+const colors = require('colors');
+const fs = require('fs');
+const citer = require('./citation.js');
 
 let citeCount = 0;
 
@@ -13,31 +12,31 @@ function myCite(key, yearBool, bracesBool, authorBool) {
     if (key === undefined) {
 	return undefined;
     }
-    let item = Cite.getItem(key);
+    let item = citer.getItem(key);
 
-    if ( (item === undefined) ||
-         (item.entryTags === undefined)) { return ''; }
+    if (item === undefined) { return ''; }
+    if (item.entryTags === undefined) { return ''; }
 
-    let leftBrace = bracesBool ? yearBool ? '(' : '' : '';
-    let rightBrace = bracesBool ? yearBool ? ')' : '' : '';
+    let leftBrace = bracesBool ? (yearBool ? '(' : false) : '';
+    let rightBrace = bracesBool ? (yearBool ? ')' : false) : '';
 
     let year = '';
     if (item.entryTags.year !== undefined) {
         year = yearBool ? item.entryTags.year : '';
     }
 
-    let author = '';
+    let author;
     if (item.entryTags.author !== undefined) {
-        author = Cite.formatAuthor(authorBool ? item.entryTags.author : '');
+        author = citer.formatAuthor(authorBool ? item.entryTags.author : '');
     }
 
     let ret = (author ? author + ' ' : '') + leftBrace + year + rightBrace;
 
     ret = ret.replace(/^\s+/, '').replace(/\s+$/, '').replace(/\r|\n|\r\n/g, '');
 
-    if (ret === '') {
-	return undefined;
-    }
+//    if (ret === '') {
+//	return undefined;
+//    }
 
     citeCount++;
     return ret;
@@ -45,8 +44,8 @@ function myCite(key, yearBool, bracesBool, authorBool) {
 
 module.exports = {
     hooks: {
-	init: function init() {
-            // Cite.init(fs.readFileSync('literature.bib', 'utf8'));
+	init: function() {
+            citer.init();
 	    console.log('Bibtex citations and references plugin...'.magenta);
             console.log('  Running in environment version ' + process.version);
 	    return;
@@ -60,7 +59,7 @@ module.exports = {
 		}
 		return str;
 	    };
-	    let refsCount = Cite.getCountRefs().toString();
+	    let refsCount = citer.getCountRefs().toString();
 	    citeCount = citeCount.toString();
 	    let maxLen = refsCount.length >= citeCount.length ? refsCount.length : citeCount.length;
 
@@ -110,7 +109,7 @@ module.exports = {
 		if (typeof block === undefined) {
 		    throw Error('Function references expects one argument: block');
 		}
-		return Cite.refs();
+		return citer.refs();
 	    }
 	},
 	refcsl: {
