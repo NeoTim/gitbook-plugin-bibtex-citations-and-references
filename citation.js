@@ -129,7 +129,7 @@ function formatAuthor(author) {
 //     });
     ret = auths.slice(0,etAl);
 
-    var retString = formatNameToInline(ret.shift());
+    var retString = formatNameToInline(ret.pop());
     if (ret.length > 0) {
         retString = formatNameToInline(ret.pop()) + ' and ' + retString;
         while ((a = ret.pop()) !== undefined) {
