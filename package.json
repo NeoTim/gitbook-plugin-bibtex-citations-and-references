@@ -23,15 +23,12 @@
   },
   "homepage": "https://github.com/austinjp/gitbook-plugin-bibtex-citations-and-references#readme",
   "dependencies": {
-    "bibtex-parse-js": "=0.0.23",
-    "citeproc": "=2.0.6",
-    "citation-js": "=0.3.0-11",
-    "colors": "=1.1.2"
+    "citeproc": "=2.0.6"
   },
   "devDependencies": {
-    "bibtex-parse-js": "=0.0.23",
+    "bibtex-parse-js": "0.0.23",
+    "citation-js": "^0.3.0-11",
     "citeproc": "=2.0.6",
-    "citation-js": "=0.3.0-11",
-    "colors": "=1.1.2"
+    "colors": "^1.1.2"
   }
 }
